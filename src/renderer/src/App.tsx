@@ -1,5 +1,5 @@
 import Versions from './components/Versions'
-import { Button } from './components/ui/button'
+import { Button } from '@renderer/components/ui/button'
 
 function App(): React.JSX.Element {
   const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
