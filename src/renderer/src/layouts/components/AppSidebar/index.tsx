@@ -3,23 +3,20 @@
 import * as React from 'react'
 import {
   IconCamera,
-  IconChartBar,
   IconDashboard,
   IconDatabase,
   IconFileAi,
   IconFileDescription,
   IconFileWord,
-  IconFolder,
   IconHelp,
   IconInnerShadowTop,
-  IconListDetails,
   IconReport,
   IconSearch,
-  IconSettings,
-  IconUsers
+  IconSettings
 } from '@tabler/icons-react'
 
 import { NavDocuments, NavMain, NavSecondary } from '../index'
+import { appRoutes } from '@renderer/routes'
 
 // import { NavUser } from '@renderer/components/nav-user'
 import {
@@ -38,33 +35,9 @@ const data = {
     email: 'm@example.com',
     avatar: '/avatars/shadcn.jpg'
   },
-  navMain: [
-    {
-      title: 'Dashboard',
-      url: '#',
-      icon: IconDashboard
-    },
-    {
-      title: 'Lifecycle',
-      url: '#',
-      icon: IconListDetails
-    },
-    {
-      title: 'Analytics',
-      url: '#',
-      icon: IconChartBar
-    },
-    {
-      title: 'Projects',
-      url: '#',
-      icon: IconFolder
-    },
-    {
-      title: 'Team',
-      url: '#',
-      icon: IconUsers
-    }
-  ],
+  navMain: appRoutes
+    .filter((r) => r.showInNav)
+    .map((r) => ({ title: r.title, url: r.path, icon: r.icon || IconDashboard })),
   navClouds: [
     {
       title: 'Capture',
@@ -160,7 +133,7 @@ export default function AppSidebar({
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">Overlook</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

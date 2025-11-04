@@ -1,17 +1,15 @@
 import { HashRouter, Routes, Route } from 'react-router-dom'
 import RootLayout from '@renderer/layouts/RootLayout'
-import Home from '@renderer/pages/Home'
-import Dashboard from '@renderer/pages/Dashboard'
-import Settings from '@renderer/pages/Settings'
+import { appRoutes } from '@renderer/routes'
 
 function App(): React.JSX.Element {
   return (
     <HashRouter>
       <Routes>
         <Route element={<RootLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/settings" element={<Settings />} />
+          {appRoutes.map((r) => (
+            <Route key={r.path} path={r.path} element={r.element} />
+          ))}
         </Route>
       </Routes>
       {/* <Versions /> */}
