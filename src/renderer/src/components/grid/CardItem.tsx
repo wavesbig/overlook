@@ -31,7 +31,7 @@ import { Button } from '@renderer/components/ui/button'
 
 type Props = { id: string }
 
-export default function GridCard({ id }: Props) {
+export default function CardItem({ id }: Props): ReactNode {
   const { cards, removeCard } = useGridStore()
   const isOnline = useGridStore((s) => s.isOnline)
   const cfg = cards[id]
@@ -91,14 +91,14 @@ export default function GridCard({ id }: Props) {
     if (!webviewRef.current) return
     setIsReady(false)
     const wv = webviewRef.current
-    const onDomReady = () => {
+    const onDomReady = (): void => {
       setError(null)
       setIsReady(true)
       if (cfg?.targetSelector) {
         wv.executeJavaScript(highlightSelectorScript(cfg.targetSelector)).catch(() => {})
       }
     }
-    const onFail = (_e: any) => {
+    const onFail = (): void => {
       setError('加载失败')
       const next = Math.min(5, retry + 1)
       setRetry(next)
@@ -146,14 +146,14 @@ export default function GridCard({ id }: Props) {
   // Auto refresh when network comes back
   useAutoRefreshOnOnline(webviewRef, isOnline, mounted, isReady)
 
-  const onRefresh = () => {
+  const onRefresh = (): void => {
     webviewRef.current?.reload()
   }
-  const onCopy = async () => {
+  const onCopy = async (): Promise<void> => {
     const data = JSON.stringify(cfg)
     await navigator.clipboard.writeText(data)
   }
-  const onDelete = () => removeCard(id)
+  const onDelete = (): void => removeCard(id)
 
   return (
     <div
@@ -293,11 +293,11 @@ export default function GridCard({ id }: Props) {
 
 // Reload when network recovers
 export function useAutoRefreshOnOnline(
-  ref: React.MutableRefObject<Electron.WebviewTag | null>,
+  ref: React.RefObject<Electron.WebviewTag | null>,
   online: boolean,
   mounted: boolean,
   ready: boolean
-) {
+): void {
   useEffect(() => {
     if (online && mounted && ready) {
       ref.current?.reload()

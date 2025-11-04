@@ -1,25 +1,14 @@
 import { ReactNode, useMemo, useEffect } from 'react'
-import { Responsive, WidthProvider, Layout } from 'react-grid-layout'
-import 'react-grid-layout/css/styles.css'
-import 'react-resizable/css/styles.css'
-import GridCard from '@renderer/components/grid/GridCard'
+import CardItem from '@renderer/components/grid/CardItem'
 import { useGridStore, GridLayoutItem, CardConfig } from '@renderer/store/grid'
-
-const ResponsiveGridLayout = WidthProvider(Responsive)
+import CardGrid from '@renderer/components/grid/CardGrid'
 
 export default function Dashboard(): ReactNode {
   const { cards, layout, updateLayout, exportConfig, importConfig, isOnline, upsertCard } =
     useGridStore()
   const items = useMemo(() => layout, [layout])
 
-  const onLayoutChange = (_: Layout[], all: { [key: string]: Layout[] }) => {
-    // Use lg layout as source of truth
-    const lg = all.lg || []
-    const next: GridLayoutItem[] = lg.map((l) => ({ i: l.i, x: l.x, y: l.y, w: l.w, h: l.h }))
-    updateLayout(next)
-  }
-
-  const addTestCards = () => {
+  const addTestCards = (): void => {
     const id1 = `card-${Math.random().toString(36).slice(2, 8)}`
     const id2 = `card-${Math.random().toString(36).slice(2, 8)}`
     const card1: CardConfig = {
@@ -52,7 +41,7 @@ export default function Dashboard(): ReactNode {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const downloadJSON = () => {
+  const downloadJSON = (): void => {
     const data = exportConfig()
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
@@ -62,7 +51,7 @@ export default function Dashboard(): ReactNode {
     URL.revokeObjectURL(a.href)
   }
 
-  const uploadJSON = async (file: File) => {
+  const uploadJSON = async (file: File): Promise<void> => {
     const text = await file.text()
     const data = JSON.parse(text)
     importConfig(data)
@@ -103,24 +92,11 @@ export default function Dashboard(): ReactNode {
       </div>
 
       {/* Grid */}
-      <ResponsiveGridLayout
-        className="layout"
-        layouts={{ lg: items as unknown as Layout[] }}
-        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: 12, md: 10, sm: 8, xs: 6, xxs: 4 }}
-        rowHeight={24}
-        margin={[8, 8]}
-        compactType={null}
-        preventCollision={true}
-        draggableHandle="[data-grid-drag-handle]"
-        onLayoutChange={onLayoutChange}
-      >
-        {items.map((it) => (
-          <div key={it.i} data-grid={it as any}>
-            <GridCard id={it.i} />
-          </div>
-        ))}
-      </ResponsiveGridLayout>
+      <CardGrid
+        items={items as GridLayoutItem[]}
+        onLayoutChange={(next) => updateLayout(next)}
+        renderItem={(it) => <CardItem id={it.i} />}
+      />
     </div>
   )
 }

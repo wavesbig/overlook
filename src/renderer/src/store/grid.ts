@@ -70,13 +70,13 @@ const electronStore: Adapter = (() => {
   }
 })()
 
-function saveToStore(cards: Record<string, CardConfig>, layout: GridLayoutItem[]) {
+function saveToStore(cards: Record<string, CardConfig>, layout: GridLayoutItem[]): void {
   electronStore.set('cards', cards)
   electronStore.set('layout', layout)
 }
 
 let saveTimer: number | undefined
-function debounceSave(cards: Record<string, CardConfig>, layout: GridLayoutItem[]) {
+function debounceSave(cards: Record<string, CardConfig>, layout: GridLayoutItem[]): void {
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = window.setTimeout(() => saveToStore(cards, layout), 400)
 }
