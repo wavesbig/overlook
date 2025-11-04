@@ -28,6 +28,16 @@ import {
 import { Input } from '@renderer/components/ui/input'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@renderer/components/ui/tooltip'
 import { Button } from '@renderer/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction
+} from '@renderer/components/ui/alert-dialog'
 
 type Props = { id: string }
 
@@ -44,6 +54,7 @@ export default function CardItem({ id }: Props): ReactNode {
   const hostRef = useRef<HTMLDivElement | null>(null)
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
   const [editing, setEditing] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [draft, setDraft] = useState({
     name: cfg?.name || '',
     url: cfg?.url || '',
@@ -153,14 +164,21 @@ export default function CardItem({ id }: Props): ReactNode {
     const data = JSON.stringify(cfg)
     await navigator.clipboard.writeText(data)
   }
-  const onDelete = (): void => removeCard(id)
+  const onDelete = (): void => setConfirmOpen(true)
+  const confirmDelete = (): void => {
+    removeCard(id)
+    setConfirmOpen(false)
+  }
 
   return (
     <div
       ref={hostRef}
       className={`group/card relative h-full w-full overflow-hidden rounded-lg border transition-all ${isFull ? 'z-50 fixed inset-0' : ''}`}
     >
-      <div className="absolute p-2 z-10 flex justify-between w-full align-center">
+      {/* Toolbar */}
+      <div
+        className="absolute p-2 z-10 flex justify-between w-full align-center opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto"
+      >
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="outline" size="icon-sm" data-grid-drag-handle aria-label="拖拽移动">
@@ -170,8 +188,7 @@ export default function CardItem({ id }: Props): ReactNode {
           <TooltipContent>拖拽以移动卡片</TooltipContent>
         </Tooltip>
 
-        {/* Toolbar */}
-        <div className="pointer-events-auto  flex items-center gap-2 opacity-90 transition-opacity group-hover/card:opacity-100 bg-background/70 backdrop-blur-sm border rounded-md px-2 py-1">
+        <div className="pointer-events-auto flex items-center gap-2 bg-background/70 backdrop-blur-sm border rounded-md px-2 py-1">
           <Button variant="outline" size="icon-sm" aria-label="刷新" onClick={onRefresh}>
             <IconReload />
           </Button>
@@ -204,6 +221,20 @@ export default function CardItem({ id }: Props): ReactNode {
           </Button>
         </div>
       </div>
+
+      {/* Delete confirm dialog */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除卡片</AlertDialogTitle>
+            <AlertDialogDescription>确认删除该卡片？此操作不可撤销。</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmOpen(false)}>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>删除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Error / offline banner */}
       {error && (

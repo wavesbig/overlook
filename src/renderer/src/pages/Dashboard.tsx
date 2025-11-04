@@ -8,8 +8,8 @@ export default function Dashboard(): ReactNode {
   const items = useMemo(() => layout, [layout])
 
   const addTestCards = (): void => {
-    const id1 = `card-${Math.random().toString(36).slice(2, 8)}`
-    const id2 = `card-${Math.random().toString(36).slice(2, 8)}`
+    const id1 = `card-${crypto.randomUUID()}`
+    const id2 = `card-${crypto.randomUUID()}`
     const card1: Grid.CardConfig = {
       id: id1,
       name: 'React 官网',
