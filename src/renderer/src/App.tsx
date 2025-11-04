@@ -1,18 +1,21 @@
-import Versions from './components/Versions'
-import { Button } from '@renderer/components/ui/button'
+import { HashRouter, Routes, Route } from 'react-router-dom'
+import RootLayout from '@renderer/layouts/RootLayout'
+import Home from '@renderer/pages/Home'
+import Dashboard from '@renderer/pages/Dashboard'
+import Settings from '@renderer/pages/Settings'
 
 function App(): React.JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
-
   return (
-    <>
-      <div className="actions">
-        <div className="action" onClick={ipcHandle}>
-          <Button>213123</Button>
-        </div>
-      </div>
-      <Versions></Versions>
-    </>
+    <HashRouter>
+      <Routes>
+        <Route element={<RootLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
+      </Routes>
+      {/* <Versions /> */}
+    </HashRouter>
   )
 }
 
