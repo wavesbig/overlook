@@ -3,12 +3,10 @@
 import * as React from 'react'
 import {
   IconCamera,
-  IconDashboard,
   IconDatabase,
   IconFileAi,
   IconFileDescription,
   IconFileWord,
-  IconHelp,
   IconInnerShadowTop,
   IconReport,
   IconSearch,
@@ -90,11 +88,7 @@ const data = {
       url: '#',
       icon: IconSettings
     },
-    {
-      title: 'Get Help',
-      url: '#',
-      icon: IconHelp
-    },
+
     {
       title: 'Search',
       url: '#',
