@@ -1,17 +1,23 @@
-import { HashRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, useRoutes } from 'react-router-dom'
+import { Suspense } from 'react'
 import RootLayout from '@renderer/layouts/RootLayout'
-import { appRoutes } from '@renderer/routes'
+import { routeChildren } from '@renderer/routes'
+
+function AppRoutes(): React.JSX.Element | null {
+  return useRoutes([
+    {
+      element: <RootLayout />,
+      children: routeChildren
+    }
+  ])
+}
 
 function App(): React.JSX.Element {
   return (
     <HashRouter>
-      <Routes>
-        <Route element={<RootLayout />}>
-          {appRoutes.map((r) => (
-            <Route key={r.path} path={r.path} element={r.element} />
-          ))}
-        </Route>
-      </Routes>
+      <Suspense fallback={<div className="p-4 text-sm">Loading…</div>}>
+        <AppRoutes />
+      </Suspense>
       {/* <Versions /> */}
     </HashRouter>
   )

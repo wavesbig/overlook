@@ -16,7 +16,7 @@ import {
 } from '@tabler/icons-react'
 
 import { NavDocuments, NavMain, NavSecondary } from '../index'
-import { appRoutes } from '@renderer/routes'
+import { appNavMain } from '@renderer/routes'
 
 // import { NavUser } from '@renderer/components/nav-user'
 import {
@@ -35,9 +35,7 @@ const data = {
     email: 'm@example.com',
     avatar: '/avatars/shadcn.jpg'
   },
-  navMain: appRoutes
-    .filter((r) => r.showInNav)
-    .map((r) => ({ title: r.title, url: r.path, icon: r.icon || IconDashboard })),
+  navMain: appNavMain,
   navClouds: [
     {
       title: 'Capture',

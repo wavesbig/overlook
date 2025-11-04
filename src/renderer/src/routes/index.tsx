@@ -1,4 +1,5 @@
-import { ReactNode } from 'react'
+import { lazy } from 'react'
+import type { RouteObject } from 'react-router-dom'
 import {
   type Icon,
   IconChartBar,
@@ -8,52 +9,37 @@ import {
   IconUsers
 } from '@tabler/icons-react'
 
-import Home from '@renderer/pages/Home'
-import Dashboard from '@renderer/pages/Dashboard'
-import Settings from '@renderer/pages/Settings'
-import Lifecycle from '@renderer/pages/Lifecycle'
-import Analytics from '@renderer/pages/Analytics'
-import Projects from '@renderer/pages/Projects'
-import Team from '@renderer/pages/Team'
+// Route components (lazy for better code-splitting)
+const Home = lazy(() => import('@renderer/pages/Home'))
+const Dashboard = lazy(() => import('@renderer/pages/Dashboard'))
+const Settings = lazy(() => import('@renderer/pages/Settings'))
+const Lifecycle = lazy(() => import('@renderer/pages/Lifecycle'))
+const Analytics = lazy(() => import('@renderer/pages/Analytics'))
+const Projects = lazy(() => import('@renderer/pages/Projects'))
+const Team = lazy(() => import('@renderer/pages/Team'))
 
-export type AppRoute = {
-  path: string
-  element: React.JSX.Element
+// 导航数据（纯元信息，供侧边栏使用）
+export type AppNavItem = {
   title: string
+  url: string
   icon?: Icon
-  showInNav?: boolean
 }
 
-export const appRoutes: AppRoute[] = [
-  { path: '/', element: <Home />, title: 'Home' },
-  {
-    path: '/dashboard',
-    element: <Dashboard />,
-    title: 'Dashboard',
-    icon: IconDashboard,
-    showInNav: true
-  },
-  {
-    path: '/lifecycle',
-    element: <Lifecycle />,
-    title: 'Lifecycle',
-    icon: IconListDetails,
-    showInNav: true
-  },
-  {
-    path: '/analytics',
-    element: <Analytics />,
-    title: 'Analytics',
-    icon: IconChartBar,
-    showInNav: true
-  },
-  {
-    path: '/projects',
-    element: <Projects />,
-    title: 'Projects',
-    icon: IconFolder,
-    showInNav: true
-  },
-  { path: '/team', element: <Team />, title: 'Team', icon: IconUsers, showInNav: true },
-  { path: '/settings', element: <Settings />, title: 'Settings' }
+export const appNavMain: AppNavItem[] = [
+  { title: 'Dashboard', url: '/dashboard', icon: IconDashboard },
+  { title: 'Lifecycle', url: '/lifecycle', icon: IconListDetails },
+  { title: 'Analytics', url: '/analytics', icon: IconChartBar },
+  { title: 'Projects', url: '/projects', icon: IconFolder },
+  { title: 'Team', url: '/team', icon: IconUsers }
+]
+
+// 路由对象（供 useRoutes 使用）
+export const routeChildren: RouteObject[] = [
+  { path: '/', element: <Home /> },
+  { path: '/dashboard', element: <Dashboard /> },
+  { path: '/lifecycle', element: <Lifecycle /> },
+  { path: '/analytics', element: <Analytics /> },
+  { path: '/projects', element: <Projects /> },
+  { path: '/team', element: <Team /> },
+  { path: '/settings', element: <Settings /> }
 ]
