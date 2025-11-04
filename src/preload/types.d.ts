@@ -22,23 +22,23 @@ declare namespace Grid {
     isDraggable?: boolean
     isResizable?: boolean
   }
+
+  type Cards = Record<string, Grid.CardConfig>
+
+  type Layouts = Grid.GridLayoutItem[]
 }
 
 // ElectronStore namespace: centralize all Store-related typing
 declare namespace ElectronStore {
   // Store value map to centralize key→value typing
   interface StoreValueMap {
-    cards: Record<string, Grid.CardConfig>
-    layout: Grid.GridLayoutItem[]
+    cards: Grid.Cards
+    layout: Grid.Layouts
   }
 
   // Centralized key and entry helpers
   type StoreKey = keyof StoreValueMap
   type StoreEntry<K extends StoreKey = StoreKey> = StoreValueMap[K]
-
-  // Convenient aliases
-  type Cards = StoreValueMap['cards']
-  type Layout = StoreValueMap['layout']
 
   // Single generic API to reduce overload maintenance
   interface StoreAPI {

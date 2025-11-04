@@ -1,24 +1,23 @@
 import { ReactNode, useMemo, useEffect } from 'react'
 import CardItem from '@renderer/components/grid/CardItem'
-import { useGridStore, GridLayoutItem, CardConfig } from '@renderer/store/grid'
+import { useGridStore } from '@renderer/store/grid'
 import CardGrid from '@renderer/components/grid/CardGrid'
 
 export default function Dashboard(): ReactNode {
-  const { cards, layout, updateLayout, exportConfig, importConfig, isOnline, upsertCard } =
-    useGridStore()
+  const { cards, layout, updateLayout, exportConfig, importConfig, upsertCard } = useGridStore()
   const items = useMemo(() => layout, [layout])
 
   const addTestCards = (): void => {
     const id1 = `card-${Math.random().toString(36).slice(2, 8)}`
     const id2 = `card-${Math.random().toString(36).slice(2, 8)}`
-    const card1: CardConfig = {
+    const card1: Grid.CardConfig = {
       id: id1,
       name: 'React 官网',
       url: 'https://react.dev',
       refreshInterval: 300,
       accessMode: 'pc'
     }
-    const card2: CardConfig = {
+    const card2: Grid.CardConfig = {
       id: id2,
       name: 'Vite 官网',
       url: 'https://vitejs.dev',
@@ -63,11 +62,11 @@ export default function Dashboard(): ReactNode {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold">主看板</h1>
-          {!isOnline && (
+          {/* {!isOnline && (
             <span className="text-xs px-2 py-1 rounded bg-amber-200/60 text-amber-900">
               离线模式，恢复后自动刷新
             </span>
-          )}
+          )} */}
         </div>
         <div className="flex items-center gap-2">
           <button className="border px-3 py-1 rounded hover:bg-muted" onClick={addTestCards}>
@@ -93,7 +92,7 @@ export default function Dashboard(): ReactNode {
 
       {/* Grid */}
       <CardGrid
-        items={items as GridLayoutItem[]}
+        items={items}
         onLayoutChange={(next) => updateLayout(next)}
         renderItem={(it) => <CardItem id={it.i} />}
       />

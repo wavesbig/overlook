@@ -2,23 +2,23 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 type GridState = {
-  cards: ElectronStore.Cards
-  layout: ElectronStore.Layout
+  cards: Grid.Cards
+  layout: Grid.Layouts
   // actions
   upsertCard: (card: Grid.CardConfig) => void
   removeCard: (id: string) => void
-  updateLayout: (layout: ElectronStore.Layout) => void
-  importConfig: (data: { cards: ElectronStore.Cards; layout: ElectronStore.Layout }) => void
-  exportConfig: () => { cards: ElectronStore.Cards; layout: ElectronStore.Layout }
+  updateLayout: (layout: Grid.Layouts) => void
+  importConfig: (data: { cards: Grid.Cards; layout: Grid.Layouts }) => void
+  exportConfig: () => { cards: Grid.Cards; layout: Grid.Layouts }
 }
 
-const DEFAULTS: { cards: ElectronStore.Cards; layout: ElectronStore.Layout } = {
+const DEFAULTS: { cards: Grid.Cards; layout: Grid.Layouts } = {
   cards: {},
   layout: []
 }
 
 const repository = {
-  async hydrate(): Promise<{ cards: ElectronStore.Cards; layout: ElectronStore.Layout } | null> {
+  async hydrate(): Promise<{ cards: Grid.Cards; layout: Grid.Layouts } | null> {
     try {
       if (window.api?.storeGet) {
         const [cards, layout] = await Promise.all([
@@ -32,7 +32,7 @@ const repository = {
     }
     return null
   },
-  persist(cards: ElectronStore.Cards, layout: ElectronStore.Layout): void {
+  persist(cards: Grid.Cards, layout: Grid.Layouts): void {
     try {
       if (window.api?.storeSet) {
         void Promise.all([
@@ -47,7 +47,7 @@ const repository = {
 }
 
 let saveTimer: number | undefined
-function debounceSave(cards: ElectronStore.Cards, layout: ElectronStore.Layout): void {
+function debounceSave(cards: Grid.Cards, layout: Grid.Layouts): void {
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = window.setTimeout(() => repository.persist(cards, layout), 400)
 }
