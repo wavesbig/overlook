@@ -27,8 +27,8 @@ export default function CardGrid({
   cols = { lg: 12, md: 10, sm: 8, xs: 6, xxs: 4 },
   rowHeight = 24,
   margin = [8, 8],
-  compactType = null,
-  preventCollision = true,
+  compactType = 'vertical',
+  preventCollision = false,
   draggableHandle = '[data-grid-drag-handle]',
   className = 'layout'
 }: CardGridProps): ReactNode {
