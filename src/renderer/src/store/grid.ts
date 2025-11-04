@@ -4,7 +4,6 @@ import { persist } from 'zustand/middleware'
 type GridState = {
   cards: ElectronStore.Cards
   layout: ElectronStore.Layout
-  isOnline: boolean
   // actions
   upsertCard: (card: Grid.CardConfig) => void
   removeCard: (id: string) => void
