@@ -1,82 +1,52 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-let ElectronStore: any = null
-try {
-  ElectronStore = require('electron-store')
-} catch (_) {
-  ElectronStore = null
-}
-
-export type RefreshInterval = 30 | 60 | 300 | 600 | 1800 | 3600 | number
-
-export type AccessMode = 'pc' | 'mobile'
-
-export type CardConfig = {
-  id: string
-  name: string
-  url: string
-  refreshInterval: RefreshInterval
-  accessMode: AccessMode
-  targetSelector?: string
-}
-
-export type GridLayoutItem = {
-  i: string
-  x: number
-  y: number
-  w: number
-  h: number
-  isDraggable?: boolean
-  isResizable?: boolean
-}
 
 type GridState = {
-  cards: Record<string, CardConfig>
-  layout: GridLayoutItem[]
+  cards: Record<string, Grid.CardConfig>
+  layout: Grid.GridLayoutItem[]
   isOnline: boolean
   // actions
-  upsertCard: (card: CardConfig) => void
+  upsertCard: (card: Grid.CardConfig) => void
   removeCard: (id: string) => void
-  updateLayout: (layout: GridLayoutItem[]) => void
-  importConfig: (data: { cards: Record<string, CardConfig>; layout: GridLayoutItem[] }) => void
-  exportConfig: () => { cards: Record<string, CardConfig>; layout: GridLayoutItem[] }
+  updateLayout: (layout: Grid.GridLayoutItem[]) => void
+  importConfig: (data: {
+    cards: Record<string, Grid.CardConfig>
+    layout: Grid.GridLayoutItem[]
+  }) => void
+  exportConfig: () => { cards: Record<string, Grid.CardConfig>; layout: Grid.GridLayoutItem[] }
 }
 
 type Adapter = {
-  get: <T = any>(key: string) => T | undefined
-  set: (key: string, val: any) => void
+  get: <T = any>(key: 'cards' | 'layout') => T | undefined
+  set: (key: 'cards' | 'layout', val: any) => void
 }
 
-const electronStore: Adapter = (() => {
-  if (ElectronStore) {
-    const store = new ElectronStore<{
-      cards: Record<string, CardConfig>
-      layout: GridLayoutItem[]
-    }>({
-      name: 'gridcards',
-      schema: { cards: { type: 'object', additionalProperties: true }, layout: { type: 'array' } }
-    })
-    return { get: (k) => store.get(k as any), set: (k, v) => store.set(k as any, v) }
-  }
-  // Fallback for web preview
-  return {
-    get(key) {
-      const raw = localStorage.getItem(`gridcards:${key}`)
-      return raw ? JSON.parse(raw) : undefined
-    },
-    set(key, val) {
-      localStorage.setItem(`gridcards:${key}`, JSON.stringify(val))
+const storeAdapter: Adapter = {
+  get<T>(key: 'cards' | 'layout'): T | undefined {
+    const raw = localStorage.getItem(`gridcards:${key}`)
+    return raw ? JSON.parse(raw) : undefined
+  },
+  set(key: 'cards' | 'layout', val: any): void {
+    // Persist to localStorage for web preview fallback
+    localStorage.setItem(`gridcards:${key}`, JSON.stringify(val))
+    // Forward to main via preload when available
+    try {
+      if (window.api?.storeSet) {
+        void window.api.storeSet(key, val)
+      }
+    } catch (_) {
+      // ignore
     }
   }
-})()
+}
 
-function saveToStore(cards: Record<string, CardConfig>, layout: GridLayoutItem[]): void {
-  electronStore.set('cards', cards)
-  electronStore.set('layout', layout)
+function saveToStore(cards: Record<string, Grid.CardConfig>, layout: Grid.GridLayoutItem[]): void {
+  storeAdapter.set('cards', cards)
+  storeAdapter.set('layout', layout)
 }
 
 let saveTimer: number | undefined
-function debounceSave(cards: Record<string, CardConfig>, layout: GridLayoutItem[]): void {
+function debounceSave(cards: Record<string, Grid.CardConfig>, layout: Grid.GridLayoutItem[]): void {
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = window.setTimeout(() => saveToStore(cards, layout), 400)
 }
@@ -84,8 +54,8 @@ function debounceSave(cards: Record<string, CardConfig>, layout: GridLayoutItem[
 export const useGridStore = create<GridState>()(
   persist(
     (set, get) => ({
-      cards: electronStore.get('cards') || {},
-      layout: electronStore.get('layout') || [],
+      cards: storeAdapter.get('cards') || {},
+      layout: storeAdapter.get('layout') || [],
       isOnline: navigator.onLine,
       upsertCard(card) {
         const cards = { ...get().cards, [card.id]: { ...card, name: card.name.slice(0, 32) } }
@@ -117,6 +87,25 @@ export const useGridStore = create<GridState>()(
     }
   )
 )
+
+// Hydrate from main electron-store asynchronously if available
+async function hydrateFromMainStore(): Promise<void> {
+  try {
+    if (window.api?.storeGet) {
+      const [cards, layout] = await Promise.all([
+        window.api.storeGet<Record<string, Grid.CardConfig>>('cards'),
+        window.api.storeGet<Grid.GridLayoutItem[]>('layout')
+      ])
+      if (cards && layout) {
+        useGridStore.setState({ cards, layout })
+      }
+    }
+  } catch (_) {
+    // ignore
+  }
+}
+
+void hydrateFromMainStore()
 
 export function setupNetworkListeners(store = useGridStore.getState()): void {
   const update = (): void => {

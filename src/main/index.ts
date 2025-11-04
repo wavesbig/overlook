@@ -2,6 +2,16 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+// Centralized electron-store in main process (direct import)
+import Store from 'electron-store'
+
+const appStore = new Store<{
+  cards: Record<string, Grid.CardConfig>
+  layout: Grid.GridLayoutItem[]
+}>({
+  name: 'gridcards',
+  schema: { cards: { type: 'object', additionalProperties: true }, layout: { type: 'array' } }
+})
 
 function createWindow(): void {
   // Create the browser window.
@@ -54,6 +64,14 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // IPC: electron-store get/set forwarding
+  ipcMain.handle('store:get', (_e, key: 'cards' | 'layout') => {
+    return appStore.get(key as any)
+  })
+  ipcMain.handle('store:set', (_e, key: 'cards' | 'layout', val: any) => {
+    appStore.set(key as any, val)
+  })
 
   createWindow()
 
