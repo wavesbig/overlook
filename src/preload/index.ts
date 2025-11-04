@@ -1,15 +1,9 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { storeAPI } from './store'
 
 // Custom APIs for renderer
-const api = {
-  storeGet: async <T = any>(key: 'cards' | 'layout'): Promise<T | undefined> => {
-    return ipcRenderer.invoke('store:get', key)
-  },
-  storeSet: async (key: 'cards' | 'layout', val: any): Promise<void> => {
-    await ipcRenderer.invoke('store:set', key, val)
-  }
-}
+const api = storeAPI
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

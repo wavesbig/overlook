@@ -2,60 +2,62 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 type GridState = {
-  cards: Record<string, Grid.CardConfig>
-  layout: Grid.GridLayoutItem[]
+  cards: ElectronStore.Cards
+  layout: ElectronStore.Layout
   isOnline: boolean
   // actions
   upsertCard: (card: Grid.CardConfig) => void
   removeCard: (id: string) => void
-  updateLayout: (layout: Grid.GridLayoutItem[]) => void
-  importConfig: (data: {
-    cards: Record<string, Grid.CardConfig>
-    layout: Grid.GridLayoutItem[]
-  }) => void
-  exportConfig: () => { cards: Record<string, Grid.CardConfig>; layout: Grid.GridLayoutItem[] }
+  updateLayout: (layout: ElectronStore.Layout) => void
+  importConfig: (data: { cards: ElectronStore.Cards; layout: ElectronStore.Layout }) => void
+  exportConfig: () => { cards: ElectronStore.Cards; layout: ElectronStore.Layout }
 }
 
-type Adapter = {
-  get: <T = any>(key: 'cards' | 'layout') => T | undefined
-  set: (key: 'cards' | 'layout', val: any) => void
+const DEFAULTS: { cards: ElectronStore.Cards; layout: ElectronStore.Layout } = {
+  cards: {},
+  layout: []
 }
 
-const storeAdapter: Adapter = {
-  get<T>(key: 'cards' | 'layout'): T | undefined {
-    const raw = localStorage.getItem(`gridcards:${key}`)
-    return raw ? JSON.parse(raw) : undefined
+const repository = {
+  async hydrate(): Promise<{ cards: ElectronStore.Cards; layout: ElectronStore.Layout } | null> {
+    try {
+      if (window.api?.storeGet) {
+        const [cards, layout] = await Promise.all([
+          window.api.storeGet('cards'),
+          window.api.storeGet('layout')
+        ])
+        return { cards: cards ?? DEFAULTS.cards, layout: layout ?? DEFAULTS.layout }
+      }
+    } catch {
+      // ignore
+    }
+    return null
   },
-  set(key: 'cards' | 'layout', val: any): void {
-    // Persist to localStorage for web preview fallback
-    localStorage.setItem(`gridcards:${key}`, JSON.stringify(val))
-    // Forward to main via preload when available
+  persist(cards: ElectronStore.Cards, layout: ElectronStore.Layout): void {
     try {
       if (window.api?.storeSet) {
-        void window.api.storeSet(key, val)
+        void Promise.all([
+          window.api.storeSet('cards', cards),
+          window.api.storeSet('layout', layout)
+        ])
       }
-    } catch (_) {
+    } catch {
       // ignore
     }
   }
 }
 
-function saveToStore(cards: Record<string, Grid.CardConfig>, layout: Grid.GridLayoutItem[]): void {
-  storeAdapter.set('cards', cards)
-  storeAdapter.set('layout', layout)
-}
-
 let saveTimer: number | undefined
-function debounceSave(cards: Record<string, Grid.CardConfig>, layout: Grid.GridLayoutItem[]): void {
+function debounceSave(cards: ElectronStore.Cards, layout: ElectronStore.Layout): void {
   if (saveTimer) clearTimeout(saveTimer)
-  saveTimer = window.setTimeout(() => saveToStore(cards, layout), 400)
+  saveTimer = window.setTimeout(() => repository.persist(cards, layout), 400)
 }
 
 export const useGridStore = create<GridState>()(
   persist(
     (set, get) => ({
-      cards: storeAdapter.get('cards') || {},
-      layout: storeAdapter.get('layout') || [],
+      cards: DEFAULTS.cards,
+      layout: DEFAULTS.layout,
       isOnline: navigator.onLine,
       upsertCard(card) {
         const cards = { ...get().cards, [card.id]: { ...card, name: card.name.slice(0, 32) } }
@@ -75,7 +77,7 @@ export const useGridStore = create<GridState>()(
       },
       importConfig(data) {
         set({ cards: data.cards, layout: data.layout })
-        saveToStore(data.cards, data.layout)
+        repository.persist(data.cards, data.layout)
       },
       exportConfig() {
         return { cards: get().cards, layout: get().layout }
@@ -89,28 +91,9 @@ export const useGridStore = create<GridState>()(
 )
 
 // Hydrate from main electron-store asynchronously if available
-async function hydrateFromMainStore(): Promise<void> {
-  try {
-    if (window.api?.storeGet) {
-      const [cards, layout] = await Promise.all([
-        window.api.storeGet<Record<string, Grid.CardConfig>>('cards'),
-        window.api.storeGet<Grid.GridLayoutItem[]>('layout')
-      ])
-      if (cards && layout) {
-        useGridStore.setState({ cards, layout })
-      }
-    }
-  } catch (_) {
-    // ignore
+void (async function hydrate(): Promise<void> {
+  const data = await repository.hydrate()
+  if (data) {
+    useGridStore.setState({ cards: data.cards, layout: data.layout })
   }
-}
-
-void hydrateFromMainStore()
-
-export function setupNetworkListeners(store = useGridStore.getState()): void {
-  const update = (): void => {
-    useGridStore.setState({ isOnline: navigator.onLine })
-  }
-  window.addEventListener('online', update)
-  window.addEventListener('offline', update)
-}
+})()

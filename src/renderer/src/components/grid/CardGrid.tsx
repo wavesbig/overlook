@@ -2,14 +2,13 @@ import { ReactNode } from 'react'
 import { Responsive, WidthProvider, Layout, CompactType } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
-import { GridLayoutItem } from '@renderer/store/grid'
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
 
 export interface CardGridProps {
-  items: GridLayoutItem[]
-  onLayoutChange: (items: GridLayoutItem[]) => void
-  renderItem: (item: GridLayoutItem) => ReactNode
+  items: Grid.GridLayoutItem[]
+  onLayoutChange: (items: Grid.GridLayoutItem[]) => void
+  renderItem: (item: Grid.GridLayoutItem) => ReactNode
   breakpoints?: { [key: string]: number }
   cols?: { [key: string]: number }
   rowHeight?: number
@@ -35,7 +34,7 @@ export default function CardGrid({
 }: CardGridProps): ReactNode {
   const handleLayoutChange = (_: Layout[], all: { [key: string]: Layout[] }): void => {
     const lg = all.lg || []
-    const next: GridLayoutItem[] = lg.map((l) => ({ i: l.i, x: l.x, y: l.y, w: l.w, h: l.h }))
+    const next: Grid.GridLayoutItem[] = lg.map((l) => ({ i: l.i, x: l.x, y: l.y, w: l.w, h: l.h }))
     onLayoutChange(next)
   }
 
