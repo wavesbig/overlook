@@ -1,4 +1,6 @@
-export default function Home() {
+import { ReactNode } from 'react'
+
+export default function Home(): ReactNode {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Home</h1>
