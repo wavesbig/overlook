@@ -226,7 +226,9 @@ export default function CardItem({ id }: Props): ReactNode {
             <select
               className="border rounded px-2 py-1"
               value={draft.accessMode}
-              onChange={(e) => setDraft((d) => ({ ...d, accessMode: e.target.value as any }))}
+              onChange={(e) =>
+                setDraft((d) => ({ ...d, accessMode: e.target.value as Grid.AccessMode }))
+              }
             >
               <option value="pc">PC</option>
               <option value="mobile">移动端</option>
