@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@renderer/components/ui/dropdown-menu'
-import { IconDots, IconDotsVertical, IconPencil, IconTrash } from '@tabler/icons-react'
+import { IconDots, IconPencil, IconTrash } from '@tabler/icons-react'
 import {
   AlertDialog,
   AlertDialogContent,

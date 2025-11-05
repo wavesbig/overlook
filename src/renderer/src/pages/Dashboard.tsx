@@ -4,6 +4,7 @@ import CardModal from '@renderer/components/grid/CardModal'
 import { useGridStore } from '@renderer/store/grid'
 import CardGrid from '@renderer/components/grid/CardGrid'
 import { Button } from '@renderer/components/ui/button'
+import Empty from '@renderer/components/ui/empty'
 
 export default function Dashboard(): ReactNode {
   const { currentLayout, updateLayoutItems, exportAll, importAll } = useGridStore()
@@ -62,12 +63,20 @@ export default function Dashboard(): ReactNode {
         </div>
       </div>
 
-      {/* Grid */}
-      <CardGrid
-        items={items}
-        onLayoutChange={(next) => updateLayoutItems(next)}
-        renderItem={(it) => <CardItem id={it.i} />}
-      />
+      {/* Grid / Empty State */}
+      {items.length === 0 ? (
+        <Empty title="暂无卡片" description="点击“添加卡片”快速开始">
+          <Button variant="outline" onClick={() => setAdding(true)}>
+            添加卡片
+          </Button>
+        </Empty>
+      ) : (
+        <CardGrid
+          items={items}
+          onLayoutChange={(next) => updateLayoutItems(next)}
+          renderItem={(it) => <CardItem id={it.i} />}
+        />
+      )}
 
       {/* Add card modal */}
       <CardModal mode="add" open={adding} onOpenChange={setAdding} />
