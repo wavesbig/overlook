@@ -20,16 +20,13 @@ export function getSearchUrl(keyword: string): string {
   return `https://www.google.com/search?q=${q}`
 }
 
-export function highlightSelectorScript(selector: string) {
+export function highlightSelectorScript(selector: string): string {
   return `
     try {
       const el = document.querySelector(${JSON.stringify(selector)});
       if (el) {
-        const prev = el.getAttribute('__gridcard_prev_style');
-        if (!prev) el.setAttribute('__gridcard_prev_style', el.getAttribute('style') || '');
-        el.style.outline = '2px solid #00b8ff';
-        el.style.outlineOffset = '2px';
-        el.style.background = 'rgba(0,184,255,0.08)';
+        document.body.innerHTML = '';
+        document.body.appendChild(el);
       }
     } catch (e) { /* ignore */ }
   `

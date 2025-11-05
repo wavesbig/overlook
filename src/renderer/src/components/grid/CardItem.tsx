@@ -37,6 +37,7 @@ type Props = { id: string }
 export default function CardItem({ id }: Props): ReactNode {
   const { currentLayout, removeCard } = useGridStore()
   const cfg = currentLayout?.items.find((it) => it.i === id)?.config
+  console.log('🚀 ~ CardItem ~ currentLayout:', currentLayout)
   const [isFull, setIsFull] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
@@ -59,6 +60,7 @@ export default function CardItem({ id }: Props): ReactNode {
     }
     const onDomReady = (): void => {
       setError(null)
+      console.log('🚀 ~ onDomReady ~ cfg?.targetSelector:', cfg?.targetSelector)
       if (cfg?.targetSelector) {
         wv.executeJavaScript(highlightSelectorScript(cfg.targetSelector)).catch(() => {})
       }

@@ -9,8 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction
+  AlertDialogCancel
 } from '@renderer/components/ui/alert-dialog'
 import { Input } from '@renderer/components/ui/input'
 import { Button } from '@renderer/components/ui/button'
@@ -48,17 +47,8 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
   const { currentLayout, upsertCard, updateLayoutItems } = useGridStore()
   const formSchema = z.object({
     name: z.string().min(1, '请填写名称').max(32, '最多32个字符'),
-    url: z.string().refine(
-      (val) => {
-        try {
-          new URL(val)
-          return true
-        } catch {
-          return false
-        }
-      },
-      { message: 'URL格式不正确' }
-    ),
+    // 允许不带协议的域名或路径，和运行时的 isValidUrl 保持一致
+    url: z.string().refine((val) => isValidUrl(val), { message: 'URL格式不正确' }),
     refreshInterval: z.number().int().min(10, '至少10秒'),
     accessMode: z.enum(['pc', 'mobile']),
     targetSelector: z.string().optional()
@@ -91,6 +81,7 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
   }, [mode, cfg])
 
   const onSubmit = (values: z.infer<typeof formSchema>): void => {
+    console.log('🚀 ~ onSubmit ~ values:', values)
     if (!isValidUrl(values.url) || !values.name.trim()) return
     if (mode === 'add') {
       const id = `card-${crypto.randomUUID()}`
@@ -241,11 +232,10 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
                   取消
                 </Button>
               </AlertDialogCancel>
-              <AlertDialogAction asChild>
-                <Button type="submit" disabled={!form.formState.isValid}>
-                  保存
-                </Button>
-              </AlertDialogAction>
+              {/* Use a plain submit button so the dialog doesn't auto-close before submit */}
+              <Button type="submit" disabled={!form.formState.isValid}>
+                保存
+              </Button>
             </AlertDialogFooter>
           </form>
         </Form>
