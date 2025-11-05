@@ -9,7 +9,6 @@ import {
   IconFileWord,
   IconInnerShadowTop,
   IconReport,
-  IconSearch,
   IconSettings
 } from '@tabler/icons-react'
 
@@ -84,33 +83,16 @@ const data = {
   ],
   navSecondary: [
     {
-      title: 'Settings',
-      url: '#',
+      title: '设置',
+      url: '/settings',
       icon: IconSettings
-    },
+    }
 
-    {
-      title: 'Search',
-      url: '#',
-      icon: IconSearch
-    }
-  ],
-  documents: [
-    {
-      name: 'Data Library',
-      url: '#',
-      icon: IconDatabase
-    },
-    {
-      name: 'Reports',
-      url: '#',
-      icon: IconReport
-    },
-    {
-      name: 'Word Assistant',
-      url: '#',
-      icon: IconFileWord
-    }
+    // {
+    //   title: 'Search',
+    //   url: '#',
+    //   icon: IconSearch
+    // }
   ]
 }
 
@@ -133,7 +115,7 @@ export default function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <NavDocuments />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       {/* <SidebarFooter>
