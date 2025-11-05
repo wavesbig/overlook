@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
+import { existsSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 // Centralized electron-store in main process (direct import)
@@ -7,6 +8,10 @@ import { getStoreValue, setStoreValue } from './gridCardsStore'
 
 function createWindow(): void {
   // Create the browser window.
+  // Resolve preload path for both .js and .mjs outputs
+  const preloadJs = join(__dirname, '../preload/index.js')
+  const preloadMjs = join(__dirname, '../preload/index.mjs')
+  const preloadPath = existsSync(preloadJs) ? preloadJs : preloadMjs
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
@@ -14,7 +19,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: preloadPath,
       sandbox: false,
       webviewTag: true,
       nodeIntegration: false,
