@@ -7,6 +7,8 @@ type GridState = {
   currentLayout?: Grid.Layout
   // actions
   createLayout: (name: string) => void
+  renameLayout: (id: string, name: string) => void
+  deleteLayout: (id: string) => void
   switchLayout: (id: string) => void
   updateLayoutItems: (items: Grid.GridLayoutItem[]) => void
   upsertCard: (card: Grid.CardConfig) => void
@@ -71,6 +73,33 @@ export const useGridStore = create<GridState>()(
         const layouts = [...get().layouts, l]
         set({ layouts, currentLayoutId: l.id, currentLayout: l })
         debounceSave(layouts, l.id)
+      },
+      renameLayout(id, name) {
+        const { layouts, currentLayoutId } = get()
+        const nextLayouts = layouts.map((l) =>
+          l.id === id ? { ...l, name: name.slice(0, 32) || '未命名布局' } : l
+        )
+        const nextCurrent = nextLayouts.find((l) => l.id === currentLayoutId)
+        set({ layouts: nextLayouts, currentLayout: nextCurrent })
+        debounceSave(nextLayouts, currentLayoutId)
+      },
+      deleteLayout(id) {
+        const { layouts, currentLayoutId } = get()
+        const filtered = layouts.filter((l) => l.id !== id)
+        if (filtered.length === 0) {
+          const l = DEFAULT_LAYOUT()
+          set({ layouts: [l], currentLayoutId: l.id, currentLayout: l })
+          debounceSave([l], l.id)
+          return
+        }
+        let nextId = currentLayoutId
+        let nextCurrent = filtered.find((l) => l.id === nextId)
+        if (!nextCurrent || currentLayoutId === id) {
+          nextId = filtered[0].id
+          nextCurrent = filtered[0]
+        }
+        set({ layouts: filtered, currentLayoutId: nextId, currentLayout: nextCurrent })
+        debounceSave(filtered, nextId)
       },
       switchLayout(id) {
         const next = get().layouts.find((l) => l.id === id)
