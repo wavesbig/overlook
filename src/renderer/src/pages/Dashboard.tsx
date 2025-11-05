@@ -1,4 +1,5 @@
-import { ReactNode, useMemo, useState } from 'react'
+import { ReactNode, useMemo, useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import CardItem from '@renderer/components/grid/CardItem'
 import CardModal from '@renderer/components/grid/CardModal'
 import { useGridStore } from '@renderer/store/grid'
@@ -7,9 +8,36 @@ import { Button } from '@renderer/components/ui/button'
 import Empty from '@renderer/components/ui/empty'
 
 export default function Dashboard(): ReactNode {
-  const { currentLayout, updateLayoutItems, exportAll, importAll } = useGridStore()
+  const {
+    currentLayout,
+    updateLayoutItems,
+    exportAll,
+    importAll,
+    switchLayout,
+    layouts,
+    currentLayoutId
+  } = useGridStore()
+  const [searchParams] = useSearchParams()
   const items = useMemo(() => currentLayout?.items ?? [], [currentLayout])
   const [adding, setAdding] = useState(false)
+
+  // When dashboard has ?id, switch to that layout; otherwise default to first
+  useEffect(() => {
+    const id = searchParams.get('id')
+    if (layouts.length === 0) return
+    if (id) {
+      const target = layouts.find((l) => l.id === id)
+      const fallback = layouts[0]
+      if (target) {
+        if (currentLayoutId !== id) switchLayout(id)
+      } else if (fallback && currentLayoutId !== fallback.id) {
+        switchLayout(fallback.id)
+      }
+    } else {
+      const first = layouts[0]
+      if (first && currentLayoutId !== first.id) switchLayout(first.id)
+    }
+  }, [searchParams, layouts, currentLayoutId, switchLayout])
 
   const downloadJSON = (): void => {
     const data = exportAll()

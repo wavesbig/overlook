@@ -1,4 +1,5 @@
 import { ReactNode, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -41,8 +42,9 @@ import { Input } from '@renderer/components/ui/input'
 import { Button } from '@renderer/components/ui/button'
 
 export default function NavDocuments(): ReactNode {
-  const { layouts, currentLayoutId, switchLayout, renameLayout, deleteLayout, createLayout } =
-    useGridStore()
+  const { layouts, currentLayoutId, renameLayout, deleteLayout, createLayout } = useGridStore()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -129,8 +131,8 @@ export default function NavDocuments(): ReactNode {
           <SidebarMenuItem key={l.id}>
             <SidebarMenuButton
               tooltip={l.name}
-              isActive={l.id === currentLayoutId}
-              onClick={editingId === l.id ? undefined : () => switchLayout(l.id)}
+              isActive={l.id === currentLayoutId && location.pathname === '/dashboard'}
+              onClick={editingId === l.id ? undefined : () => navigate(`/dashboard?id=${l.id}`)}
             >
               <span className="text-muted-foreground mr-2">
                 <IconLayoutGrid className="size-4" />
