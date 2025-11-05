@@ -3,12 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 // Centralized electron-store in main process (direct import)
-import Store from 'electron-store'
-
-const appStore = new Store<ElectronStore.StoreValueMap>({
-  name: 'gridcards',
-  schema: { cards: { type: 'object', additionalProperties: true }, layout: { type: 'array' } }
-})
+import { getStoreValue, setStoreValue } from './gridCardsStore'
 
 function createWindow(): void {
   // Create the browser window.
@@ -64,10 +59,10 @@ app.whenReady().then(() => {
 
   // IPC: electron-store get/set forwarding
   ipcMain.handle('store:get', (_e, key: ElectronStore.StoreKey) => {
-    return appStore.get(key)
+    return getStoreValue(key)
   })
   ipcMain.handle('store:set', (_e, key: ElectronStore.StoreKey, val: ElectronStore.StoreEntry) => {
-    appStore.set(key, val)
+    setStoreValue(key, val)
   })
 
   createWindow()
