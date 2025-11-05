@@ -1,23 +1,23 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useState } from 'react'
 import { Card, CardContent, CardHeader } from '@renderer/components/ui/card'
 import { ToggleGroup, ToggleGroupItem } from '@renderer/components/ui/toggle-group'
 import { Label } from '@renderer/components/ui/label'
 import { setTheme, getStoredTheme, type ThemeMode } from '@renderer/lib/theme'
 import { IconSun, IconMoon, IconDeviceDesktop } from '@tabler/icons-react'
-import { Input } from '@renderer/components/ui/input'
+// import { Input } from '@renderer/components/ui/input'
 
 export default function Settings(): ReactNode {
   const [theme, setThemeState] = useState<ThemeMode>(() => getStoredTheme())
-  const [radius, setRadius] = useState<number>(() => {
-    const saved = localStorage.getItem('overlook-radius')
-    return saved ? Number(saved) : 0.65
-  })
+  // const [radius, setRadius] = useState<number>(() => {
+  //   const saved = localStorage.getItem('overlook-radius')
+  //   return saved ? Number(saved) : 0.65
+  // })
 
-  useEffect(() => {
-    // Apply radius variable
-    document.documentElement.style.setProperty('--radius', `${radius}rem`)
-    localStorage.setItem('overlook-radius', String(radius))
-  }, [radius])
+  // useEffect(() => {
+  //   // Apply radius variable
+  //   document.documentElement.style.setProperty('--radius', `${radius}rem`)
+  //   localStorage.setItem('overlook-radius', String(radius))
+  // }, [radius])
 
   const onThemeChange = (val: string | undefined): void => {
     if (!val) return

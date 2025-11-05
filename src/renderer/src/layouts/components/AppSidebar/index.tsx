@@ -3,17 +3,14 @@
 import * as React from 'react'
 import {
   IconCamera,
-  IconDatabase,
   IconFileAi,
   IconFileDescription,
-  IconFileWord,
   IconInnerShadowTop,
-  IconReport,
   IconSettings
 } from '@tabler/icons-react'
 
-import { NavDocuments, NavMain, NavSecondary } from '../index'
-import { appNavMain } from '@renderer/routes'
+import { NavDocuments, NavSecondary } from '../index'
+// import { appNavMain } from '@renderer/routes'
 
 // import { NavUser } from '@renderer/components/nav-user'
 import {
@@ -32,7 +29,8 @@ const data = {
     email: 'm@example.com',
     avatar: '/avatars/shadcn.jpg'
   },
-  navMain: appNavMain,
+  // navMain: appNavMain,
+  navMain: [],
   navClouds: [
     {
       title: 'Capture',
@@ -114,7 +112,7 @@ export default function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        {/* <NavMain items={data.navMain} /> */}
         <NavDocuments />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>

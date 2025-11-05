@@ -2,10 +2,13 @@ import { ReactNode, useState } from 'react'
 import {
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarGroupAction,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuAction,
+  SidebarInput,
   useSidebar
 } from '@renderer/components/ui/sidebar'
 import { useGridStore } from '@renderer/store/grid'
@@ -16,7 +19,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@renderer/components/ui/dropdown-menu'
-import { IconDots, IconPencil, IconTrash } from '@tabler/icons-react'
+import {
+  IconDots,
+  IconPencil,
+  IconTrash,
+  IconLayoutGrid,
+  IconX,
+  IconTablePlus
+} from '@tabler/icons-react'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -28,12 +38,16 @@ import {
   AlertDialogAction
 } from '@renderer/components/ui/alert-dialog'
 import { Input } from '@renderer/components/ui/input'
+import { Button } from '@renderer/components/ui/button'
 
 export default function NavDocuments(): ReactNode {
-  const { layouts, currentLayoutId, switchLayout, renameLayout, deleteLayout } = useGridStore()
+  const { layouts, currentLayoutId, switchLayout, renameLayout, deleteLayout, createLayout } =
+    useGridStore()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [renameText, setRenameText] = useState('')
+  const [filter, setFilter] = useState('')
 
   const { isMobile } = useSidebar()
 
@@ -51,43 +65,95 @@ export default function NavDocuments(): ReactNode {
     setEditingId(null)
   }
   const startDelete = (id: string): void => {
-    setEditingId(id)
+    setDeletingId(id)
     setDeleteOpen(true)
   }
   const confirmDelete = (): void => {
-    if (!editingId) return
-    deleteLayout(editingId)
+    if (!deletingId) return
+    deleteLayout(deletingId)
     setDeleteOpen(false)
-    setEditingId(null)
+    setDeletingId(null)
   }
+
+  const filtered = filter.trim()
+    ? layouts.filter((l) => l.name.toLowerCase().includes(filter.trim().toLowerCase()))
+    : layouts
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>布局</SidebarGroupLabel>
+      <SidebarGroupLabel>
+        布局
+        <span className="ml-1 text-muted-foreground">({layouts.length})</span>
+      </SidebarGroupLabel>
+      <SidebarGroupAction
+        aria-label="快速创建布局"
+        title="快速创建布局"
+        onClick={() => createLayout('新布局')}
+      >
+        <IconTablePlus />
+      </SidebarGroupAction>
+
+      <SidebarGroupContent className="mb-3">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <SidebarInput
+              placeholder="筛选布局…"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+            {filter && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="清除筛选"
+                onClick={() => setFilter('')}
+              >
+                <IconX className="size-4" />
+              </Button>
+            )}
+          </div>
+          <Button
+            variant="default"
+            size="sm"
+            className="w-full justify-start"
+            onClick={() => createLayout('新布局')}
+          >
+            <IconTablePlus />
+            <span>新建布局</span>
+          </Button>
+        </div>
+      </SidebarGroupContent>
+
       <SidebarMenu>
-        {layouts.map((l) => (
+        {filtered.map((l) => (
           <SidebarMenuItem key={l.id}>
             <SidebarMenuButton
               tooltip={l.name}
               isActive={l.id === currentLayoutId}
               onClick={editingId === l.id ? undefined : () => switchLayout(l.id)}
             >
-              {editingId === l.id ? (
-                <Input
-                  autoFocus
-                  value={renameText}
-                  maxLength={32}
-                  className="h-7 px-2 text-sm"
-                  onChange={(e) => setRenameText(e.target.value)}
-                  onBlur={confirmRename}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') confirmRename()
-                    if (e.key === 'Escape') cancelRename()
-                  }}
-                />
-              ) : (
-                <span className="truncate max-w-[180px]">{l.name}</span>
-              )}
+              <span className="text-muted-foreground mr-2">
+                <IconLayoutGrid className="size-4" />
+              </span>
+              <div className="flex-1 mr-2 min-w-0">
+                {editingId === l.id ? (
+                  <Input
+                    autoFocus
+                    value={renameText}
+                    maxLength={32}
+                    className="h-7 px-2 text-sm w-full"
+                    onChange={(e) => setRenameText(e.target.value)}
+                    onBlur={confirmRename}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') confirmRename()
+                      if (e.key === 'Escape') cancelRename()
+                    }}
+                  />
+                ) : (
+                  <span className="truncate">{l.name}</span>
+                )}
+              </div>
+              <span className="ml-auto text-xs text-muted-foreground">{l.items?.length ?? 0}</span>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -114,6 +180,18 @@ export default function NavDocuments(): ReactNode {
             </DropdownMenu>
           </SidebarMenuItem>
         ))}
+        {filtered.length === 0 && (
+          <SidebarMenuItem>
+            <div className="text-muted-foreground text-xs px-2 py-1">无匹配布局</div>
+          </SidebarMenuItem>
+        )}
+        {layouts.length === 0 && !filter && (
+          <SidebarMenuItem>
+            <div className="text-muted-foreground text-xs px-2 py-1">
+              暂无布局，点击右上角 + 创建
+            </div>
+          </SidebarMenuItem>
+        )}
       </SidebarMenu>
 
       {/* Delete confirm dialog */}
