@@ -1,11 +1,14 @@
-import { ReactNode, useMemo, useEffect } from 'react'
+import { ReactNode, useMemo, useEffect, useState } from 'react'
 import CardItem from '@renderer/components/grid/CardItem'
+import CardModal from '@renderer/components/grid/CardModal'
 import { useGridStore } from '@renderer/store/grid'
 import CardGrid from '@renderer/components/grid/CardGrid'
+import { Button } from '@renderer/components/ui/button'
 
 export default function Dashboard(): ReactNode {
   const { cards, layout, updateLayout, exportConfig, importConfig, upsertCard } = useGridStore()
   const items = useMemo(() => layout, [layout])
+  const [adding, setAdding] = useState(false)
 
   const addTestCards = (): void => {
     const id1 = `card-${crypto.randomUUID()}`
@@ -69,14 +72,19 @@ export default function Dashboard(): ReactNode {
           )} */}
         </div>
         <div className="flex items-center gap-2">
-          <button className="border px-3 py-1 rounded hover:bg-muted" onClick={addTestCards}>
+          <Button variant="outline" onClick={() => setAdding(true)}>
+            添加卡片
+          </Button>
+          <Button variant="outline" onClick={addTestCards}>
             添加测试卡片
-          </button>
-          <button className="border px-3 py-1 rounded hover:bg-muted" onClick={downloadJSON}>
+          </Button>
+          <Button variant="outline" onClick={downloadJSON}>
             导出配置
-          </button>
-          <label className="border px-3 py-1 rounded hover:bg-muted cursor-pointer">
-            导入配置
+          </Button>
+          <label className="cursor-pointer">
+            <Button variant="outline" asChild>
+              <span>导入配置</span>
+            </Button>
             <input
               type="file"
               accept="application/json"
@@ -96,6 +104,9 @@ export default function Dashboard(): ReactNode {
         onLayoutChange={(next) => updateLayout(next)}
         renderItem={(it) => <CardItem id={it.i} />}
       />
+
+      {/* Add card modal */}
+      <CardModal mode="add" open={adding} onOpenChange={setAdding} />
     </div>
   )
 }

@@ -17,15 +17,7 @@ import {
   IconTrash,
   IconGripVertical
 } from '@tabler/icons-react'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetClose
-} from '@renderer/components/ui/sheet'
-import { Input } from '@renderer/components/ui/input'
+import CardModal from './CardModal'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@renderer/components/ui/tooltip'
 import { Button } from '@renderer/components/ui/button'
 import {
@@ -49,24 +41,7 @@ export default function CardItem({ id }: Props): ReactNode {
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
   const [editing, setEditing] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [draft, setDraft] = useState({
-    name: cfg?.name || '',
-    url: cfg?.url || '',
-    refreshInterval: cfg?.refreshInterval || 300,
-    accessMode: cfg?.accessMode || 'pc',
-    targetSelector: cfg?.targetSelector || ''
-  })
-
-  useEffect(() => {
-    // sync draft when cfg changes
-    setDraft({
-      name: cfg?.name || '',
-      url: cfg?.url || '',
-      refreshInterval: cfg?.refreshInterval || 300,
-      accessMode: cfg?.accessMode || 'pc',
-      targetSelector: cfg?.targetSelector || ''
-    })
-  }, [cfg])
+  // 编辑模态框在子组件内管理草稿状态
 
   useEffect(() => {
     if (!webviewRef.current) return
@@ -195,69 +170,10 @@ export default function CardItem({ id }: Props): ReactNode {
       {/* WebView content */}
       <webview ref={webviewRef} className="h-full w-full" />
 
-      {/* Edit sheet */}
-      <Sheet open={editing} onOpenChange={setEditing}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>编辑卡片</SheetTitle>
-            <SheetDescription>配置站点信息及刷新策略。</SheetDescription>
-          </SheetHeader>
-          <div className="grid gap-3 py-4">
-            <label className="text-sm">网站名称</label>
-            <Input
-              value={draft.name}
-              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value.slice(0, 32) }))}
-            />
-            <label className="text-sm">网站 URL</label>
-            <Input
-              aria-invalid={!isValidUrl(draft.url)}
-              value={draft.url}
-              onChange={(e) => setDraft((d) => ({ ...d, url: e.target.value }))}
-            />
-            <label className="text-sm">刷新间隔（秒）</label>
-            <Input
-              type="number"
-              min={10}
-              step={10}
-              value={draft.refreshInterval}
-              onChange={(e) => setDraft((d) => ({ ...d, refreshInterval: Number(e.target.value) }))}
-            />
-            <label className="text-sm">访问模式</label>
-            <select
-              className="border rounded px-2 py-1"
-              value={draft.accessMode}
-              onChange={(e) =>
-                setDraft((d) => ({ ...d, accessMode: e.target.value as Grid.AccessMode }))
-              }
-            >
-              <option value="pc">PC</option>
-              <option value="mobile">移动端</option>
-            </select>
-            <label className="text-sm">目标选择器（可选）</label>
-            <Input
-              value={draft.targetSelector}
-              onChange={(e) => setDraft((d) => ({ ...d, targetSelector: e.target.value }))}
-            />
-          </div>
-          <div className="mt-4 flex items-center justify-end gap-2">
-            <SheetClose asChild>
-              <Button variant="outline">取消</Button>
-            </SheetClose>
-            <SheetClose asChild>
-              <Button
-                onClick={() => {
-                  if (!cfg) return
-                  if (!isValidUrl(draft.url)) return
-                  const next = { ...cfg, ...draft, id }
-                  useGridStore.getState().upsertCard(next)
-                }}
-              >
-                保存
-              </Button>
-            </SheetClose>
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Edit modal */}
+      {cfg && editing && (
+        <CardModal mode="edit" open={editing} onOpenChange={setEditing} cfg={cfg} />
+      )}
     </div>
   )
 }
