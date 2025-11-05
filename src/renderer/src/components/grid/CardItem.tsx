@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import { useGridStore } from '@renderer/store/grid'
 import {
   UA_PC,
@@ -43,15 +43,9 @@ type Props = { id: string }
 
 export default function CardItem({ id }: Props): ReactNode {
   const { cards, removeCard } = useGridStore()
-  const isOnline = useGridStore((s) => s.isOnline)
   const cfg = cards[id]
   const [isFull, setIsFull] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [mounted, setMounted] = useState(false)
-  const [retry, setRetry] = useState(0)
-  const [timerId, setTimerId] = useState<number | null>(null)
-  const [isReady, setIsReady] = useState(false)
-  const hostRef = useRef<HTMLDivElement | null>(null)
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
   const [editing, setEditing] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -74,46 +68,27 @@ export default function CardItem({ id }: Props): ReactNode {
     })
   }, [cfg])
 
-  const url = useMemo(() => {
-    if (!cfg) return ''
-    const u = cfg.url.trim()
-    if (!isValidUrl(u)) return getSearchUrl(u)
-    return normalizeUrl(u)
-  }, [cfg])
-
-  const ua = cfg?.accessMode === 'mobile' ? UA_MOBILE : UA_PC
-
-  // Lazy mount via intersection observer
-  useEffect(() => {
-    const el = hostRef.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) setMounted(true)
-        else setMounted(false)
-      },
-      { rootMargin: '200px' }
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [])
-
   useEffect(() => {
     if (!webviewRef.current) return
-    setIsReady(false)
     const wv = webviewRef.current
+
+    if (wv) {
+      const u = cfg.url.trim()
+      const url = !isValidUrl(u) ? getSearchUrl(u) : normalizeUrl(u)
+      wv.src = url
+      const ua = cfg?.accessMode === 'mobile' ? UA_MOBILE : UA_PC
+      wv.useragent = ua
+      wv.partition = `persist:gridcard-${id}`
+      wv.allowpopups = true
+    }
     const onDomReady = (): void => {
       setError(null)
-      setIsReady(true)
       if (cfg?.targetSelector) {
         wv.executeJavaScript(highlightSelectorScript(cfg.targetSelector)).catch(() => {})
       }
     }
     const onFail = (): void => {
       setError('加载失败')
-      const next = Math.min(5, retry + 1)
-      setRetry(next)
-      // do not reload immediately here; wait for effect below with isReady guard
     }
     wv.addEventListener('dom-ready', onDomReady)
     wv.addEventListener('did-fail-load', onFail)
@@ -123,39 +98,16 @@ export default function CardItem({ id }: Props): ReactNode {
     }
   }, [cfg])
 
-  // Backoff reload after a failure, only when webview is ready
-  useEffect(() => {
-    if (!webviewRef.current) return
-    if (!isReady || retry === 0) return
-    const wv = webviewRef.current
-    const t = window.setTimeout(() => {
-      wv.reload()
-    }, 500 * retry)
-    return () => clearTimeout(t)
-  }, [isReady, retry])
-
-  // Scheduled refresh
   useEffect(() => {
     if (!cfg) return
-    if (timerId) {
-      clearInterval(timerId)
-      setTimerId(null)
-    }
     const id = window.setInterval(
       () => {
-        // only refresh when mounted and ready
-        if (mounted && isReady) webviewRef.current?.reload()
+        webviewRef.current?.reload()
       },
       (cfg.refreshInterval || 300) * 1000
     )
-    setTimerId(id)
-    return () => {
-      clearInterval(id)
-    }
-  }, [cfg?.refreshInterval, mounted, isReady])
-
-  // Auto refresh when network comes back
-  useAutoRefreshOnOnline(webviewRef, isOnline, mounted, isReady)
+    return () => clearInterval(id)
+  }, [cfg?.refreshInterval])
 
   const onRefresh = (): void => {
     webviewRef.current?.reload()
@@ -172,13 +124,10 @@ export default function CardItem({ id }: Props): ReactNode {
 
   return (
     <div
-      ref={hostRef}
       className={`group/card relative h-full w-full overflow-hidden rounded-lg border transition-all ${isFull ? 'z-50 fixed inset-0' : ''}`}
     >
       {/* Toolbar */}
-      <div
-        className="absolute p-2 z-10 flex justify-between w-full align-center opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto"
-      >
+      <div className="absolute p-2 z-10 flex justify-between w-full align-center opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="outline" size="icon-sm" data-grid-drag-handle aria-label="拖拽移动">
@@ -244,18 +193,7 @@ export default function CardItem({ id }: Props): ReactNode {
       )}
 
       {/* WebView content */}
-      {mounted ? (
-        <webview
-          ref={(r) => (webviewRef.current = r)}
-          src={url}
-          useragent={ua}
-          partition={`persist:gridcard-${id}`}
-          allowpopups={'true' as any}
-          className="h-full w-full"
-        />
-      ) : (
-        <div className="bg-muted/30 h-full w-full" />
-      )}
+      <webview ref={webviewRef} className="h-full w-full" />
 
       {/* Edit sheet */}
       <Sheet open={editing} onOpenChange={setEditing}>
@@ -320,18 +258,4 @@ export default function CardItem({ id }: Props): ReactNode {
       </Sheet>
     </div>
   )
-}
-
-// Reload when network recovers
-export function useAutoRefreshOnOnline(
-  ref: React.RefObject<Electron.WebviewTag | null>,
-  online: boolean,
-  mounted: boolean,
-  ready: boolean
-): void {
-  useEffect(() => {
-    if (online && mounted && ready) {
-      ref.current?.reload()
-    }
-  }, [online, mounted, ready])
 }
