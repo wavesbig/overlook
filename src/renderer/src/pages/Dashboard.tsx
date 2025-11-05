@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useEffect, useState } from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import CardItem from '@renderer/components/grid/CardItem'
 import CardModal from '@renderer/components/grid/CardModal'
 import { useGridStore } from '@renderer/store/grid'
@@ -6,42 +6,9 @@ import CardGrid from '@renderer/components/grid/CardGrid'
 import { Button } from '@renderer/components/ui/button'
 
 export default function Dashboard(): ReactNode {
-  const { cards, layout, updateLayout, exportConfig, importConfig, upsertCard } = useGridStore()
+  const { layout, updateLayout, exportConfig, importConfig } = useGridStore()
   const items = useMemo(() => layout, [layout])
   const [adding, setAdding] = useState(false)
-
-  const addTestCards = (): void => {
-    const id1 = `card-${crypto.randomUUID()}`
-    const id2 = `card-${crypto.randomUUID()}`
-    const card1: Grid.CardConfig = {
-      id: id1,
-      name: 'React 官网',
-      url: 'https://react.dev',
-      refreshInterval: 300,
-      accessMode: 'pc'
-    }
-    const card2: Grid.CardConfig = {
-      id: id2,
-      name: 'Vite 官网',
-      url: 'https://vitejs.dev',
-      refreshInterval: 300,
-      accessMode: 'pc'
-    }
-    upsertCard(card1)
-    upsertCard(card2)
-    updateLayout([
-      ...layout,
-      { i: id1, x: 0, y: 0, w: 6, h: 8 },
-      { i: id2, x: 6, y: 0, w: 6, h: 8 }
-    ])
-  }
-
-  useEffect(() => {
-    if (layout.length === 0 && Object.keys(cards).length === 0) {
-      addTestCards()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const downloadJSON = (): void => {
     const data = exportConfig()
@@ -74,9 +41,6 @@ export default function Dashboard(): ReactNode {
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setAdding(true)}>
             添加卡片
-          </Button>
-          <Button variant="outline" onClick={addTestCards}>
-            添加测试卡片
           </Button>
           <Button variant="outline" onClick={downloadJSON}>
             导出配置
