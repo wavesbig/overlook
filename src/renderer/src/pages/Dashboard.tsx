@@ -21,21 +21,14 @@ export default function Dashboard(): ReactNode {
   const items = useMemo(() => currentLayout?.items ?? [], [currentLayout])
   const [adding, setAdding] = useState(false)
 
-  // When dashboard has ?id, switch to that layout; otherwise default to first
+  // Switch layout by ?id; fallback to first layout if missing/invalid
   useEffect(() => {
-    const id = searchParams.get('id')
-    if (layouts.length === 0) return
-    if (id) {
-      const target = layouts.find((l) => l.id === id)
-      const fallback = layouts[0]
-      if (target) {
-        if (currentLayoutId !== id) switchLayout(id)
-      } else if (fallback && currentLayoutId !== fallback.id) {
-        switchLayout(fallback.id)
-      }
-    } else {
-      const first = layouts[0]
-      if (first && currentLayoutId !== first.id) switchLayout(first.id)
+    const paramId = searchParams.get('id')
+    if (!layouts.length) return
+    const hasParam = paramId && layouts.some((l) => l.id === paramId)
+    const targetId = hasParam ? (paramId as string) : layouts[0].id
+    if (targetId && currentLayoutId !== targetId) {
+      switchLayout(targetId)
     }
   }, [searchParams, layouts, currentLayoutId, switchLayout])
 
