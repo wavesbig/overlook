@@ -143,7 +143,7 @@ export default function NavDocuments(): ReactNode {
                     maxLength={32}
                     className="h-7 px-2 text-sm w-full"
                     onChange={(e) => setRenameText(e.target.value)}
-                    onBlur={confirmRename}
+                    onBlur={cancelRename}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') confirmRename()
                       if (e.key === 'Escape') cancelRename()
@@ -199,7 +199,11 @@ export default function NavDocuments(): ReactNode {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>删除布局</AlertDialogTitle>
-            <AlertDialogDescription>确认删除该布局？此操作不可撤销。</AlertDialogDescription>
+            <AlertDialogDescription>
+              确认删除：
+              {layouts.find((x) => x.id === deletingId)?.name ?? '该布局'}（
+              {layouts.find((x) => x.id === deletingId)?.items?.length ?? 0} 项）？此操作不可撤销。
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDeleteOpen(false)}>取消</AlertDialogCancel>
