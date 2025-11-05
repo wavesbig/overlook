@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useGridStore } from '@renderer/store/grid'
 import {
   UA_PC,
@@ -41,8 +42,8 @@ export default function CardItem({ id }: Props): ReactNode {
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
   const [editing, setEditing] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
-  // 编辑模态框在子组件内管理草稿状态
 
+  // Re-init webview when config changes or fullscreen toggles (portal remount)
   useEffect(() => {
     if (!webviewRef.current || !cfg) return
     const wv = webviewRef.current
@@ -71,7 +72,7 @@ export default function CardItem({ id }: Props): ReactNode {
       wv.removeEventListener('dom-ready', onDomReady)
       wv.removeEventListener('did-fail-load', onFail)
     }
-  }, [cfg])
+  }, [cfg, isFull])
 
   useEffect(() => {
     if (!cfg) return
@@ -98,9 +99,9 @@ export default function CardItem({ id }: Props): ReactNode {
     setConfirmOpen(false)
   }
 
-  return (
+  const cardContent = (
     <div
-      className={`group/card relative h-full w-full overflow-hidden rounded-lg border transition-all ${isFull ? 'z-50 fixed inset-0' : ''}`}
+      className={`group/card ${isFull ? 'fixed inset-0 z-[1000] bg-background' : 'relative rounded-lg border'} h-full w-full overflow-hidden transition-all`}
     >
       {/* Toolbar */}
       <div className="absolute p-2 z-10 flex justify-between w-full align-center opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto">
@@ -133,14 +134,19 @@ export default function CardItem({ id }: Props): ReactNode {
             </TooltipTrigger>
             <TooltipContent>编辑卡片</TooltipContent>
           </Tooltip>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="全屏"
-            onClick={() => setIsFull((v) => !v)}
-          >
-            {isFull ? <IconArrowsMinimize /> : <IconArrowsMaximize />}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label="全屏"
+                onClick={() => setIsFull((v) => !v)}
+              >
+                {isFull ? <IconArrowsMinimize /> : <IconArrowsMaximize />}
+                <TooltipContent>{isFull ? '退出全屏' : '全屏显示'}</TooltipContent>
+              </Button>
+            </TooltipTrigger>
+          </Tooltip>
           <Button variant="destructive" size="icon-sm" aria-label="删除" onClick={onDelete}>
             <IconTrash />
           </Button>
@@ -177,4 +183,7 @@ export default function CardItem({ id }: Props): ReactNode {
       )}
     </div>
   )
+
+  // 当 isFull=true 时，通过 Portal 将卡片渲染到 document.body，避免被 react-grid-layout 的 transform 限制
+  return isFull ? createPortal(cardContent, document.body) : cardContent
 }
