@@ -21,19 +21,30 @@ declare namespace Grid {
     h: number
     isDraggable?: boolean
     isResizable?: boolean
+    // 将站点配置直接放入网格项，字段名更直观
+    config: Grid.CardConfig
   }
 
   type Cards = Record<string, Grid.CardConfig>
 
-  type Layouts = Grid.GridLayoutItem[]
+  // 单个布局对象：包含网格项与其对应的卡片配置
+  type Layout = {
+    id: string
+    name: string
+    items: Grid.GridLayoutItem[]
+  }
+
+  // 布局列表
+  type Layouts = Grid.Layout[]
 }
 
 // ElectronStore namespace: centralize all Store-related typing
 declare namespace ElectronStore {
   // Store value map to centralize key→value typing
   interface StoreValueMap {
-    cards: Grid.Cards
-    layout: Grid.Layouts
+    // 仅保留新版键：多布局与当前布局选择
+    layouts?: Grid.Layouts
+    currentLayoutId?: string
   }
 
   // Centralized key and entry helpers

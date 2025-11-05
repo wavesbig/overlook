@@ -2,7 +2,11 @@ import Store from 'electron-store'
 
 const store = new Store<ElectronStore.StoreValueMap>({
   name: 'gridcards',
-  schema: { cards: { type: 'object', additionalProperties: true }, layout: { type: 'array' } }
+  schema: {
+    // 仅保留新版键
+    layouts: { type: 'array' },
+    currentLayoutId: { type: 'string' }
+  }
 })
 
 // 导出简单的操作方法

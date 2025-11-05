@@ -6,12 +6,12 @@ import CardGrid from '@renderer/components/grid/CardGrid'
 import { Button } from '@renderer/components/ui/button'
 
 export default function Dashboard(): ReactNode {
-  const { layout, updateLayout, exportConfig, importConfig } = useGridStore()
-  const items = useMemo(() => layout, [layout])
+  const { currentLayout, updateLayoutItems, exportAll, importAll } = useGridStore()
+  const items = useMemo(() => currentLayout?.items ?? [], [currentLayout])
   const [adding, setAdding] = useState(false)
 
   const downloadJSON = (): void => {
-    const data = exportConfig()
+    const data = exportAll()
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
@@ -23,7 +23,7 @@ export default function Dashboard(): ReactNode {
   const uploadJSON = async (file: File): Promise<void> => {
     const text = await file.text()
     const data = JSON.parse(text)
-    importConfig(data)
+    importAll(data)
   }
 
   return (
@@ -65,7 +65,7 @@ export default function Dashboard(): ReactNode {
       {/* Grid */}
       <CardGrid
         items={items}
-        onLayoutChange={(next) => updateLayout(next)}
+        onLayoutChange={(next) => updateLayoutItems(next)}
         renderItem={(it) => <CardItem id={it.i} />}
       />
 

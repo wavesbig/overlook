@@ -34,8 +34,8 @@ import {
 type Props = { id: string }
 
 export default function CardItem({ id }: Props): ReactNode {
-  const { cards, removeCard } = useGridStore()
-  const cfg = cards[id]
+  const { currentLayout, removeCard } = useGridStore()
+  const cfg = currentLayout?.items.find((it) => it.i === id)?.config
   const [isFull, setIsFull] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
@@ -44,7 +44,7 @@ export default function CardItem({ id }: Props): ReactNode {
   // 编辑模态框在子组件内管理草稿状态
 
   useEffect(() => {
-    if (!webviewRef.current) return
+    if (!webviewRef.current || !cfg) return
     const wv = webviewRef.current
 
     if (wv) {
@@ -88,6 +88,7 @@ export default function CardItem({ id }: Props): ReactNode {
     webviewRef.current?.reload()
   }
   const onCopy = async (): Promise<void> => {
+    if (!cfg) return
     const data = JSON.stringify(cfg)
     await navigator.clipboard.writeText(data)
   }

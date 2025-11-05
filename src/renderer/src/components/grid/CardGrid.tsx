@@ -34,7 +34,10 @@ export default function CardGrid({
 }: CardGridProps): ReactNode {
   const handleLayoutChange = (_: Layout[], all: { [key: string]: Layout[] }): void => {
     const lg = all.lg || []
-    const next: Grid.GridLayoutItem[] = lg.map((l) => ({ i: l.i, x: l.x, y: l.y, w: l.w, h: l.h }))
+    const next: Grid.GridLayoutItem[] = lg.map((l) => {
+      const existing = items.find((it) => it.i === l.i)
+      return { ...(existing ?? { i: l.i } as Grid.GridLayoutItem), x: l.x, y: l.y, w: l.w, h: l.h }
+    })
     onLayoutChange(next)
   }
 

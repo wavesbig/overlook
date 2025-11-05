@@ -45,7 +45,7 @@ type Props = {
 }
 
 export default function CardModal({ mode, open, onOpenChange, cfg }: Props): ReactNode {
-  const { layout, upsertCard, updateLayout } = useGridStore()
+  const { currentLayout, upsertCard, updateLayoutItems } = useGridStore()
   const formSchema = z.object({
     name: z.string().min(1, '请填写名称').max(32, '最多32个字符'),
     url: z.string().refine(
@@ -95,8 +95,11 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
     if (mode === 'add') {
       const id = `card-${crypto.randomUUID()}`
       const next = { id, ...values } as Grid.CardConfig
-      upsertCard(next)
-      updateLayout([...layout, { i: id, x: 0, y: 0, w: 6, h: 8 }])
+      const items = [
+        ...(currentLayout?.items ?? []),
+        { i: id, x: 0, y: 0, w: 6, h: 8, config: next }
+      ]
+      updateLayoutItems(items)
     } else if (mode === 'edit' && cfg) {
       const next = { ...cfg, ...values }
       upsertCard(next)
