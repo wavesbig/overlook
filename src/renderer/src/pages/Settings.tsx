@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader } from '@renderer/components/ui/card'
 import { ToggleGroup, ToggleGroupItem } from '@renderer/components/ui/toggle-group'
 import { Label } from '@renderer/components/ui/label'
@@ -8,16 +8,21 @@ import { IconSun, IconMoon, IconDeviceDesktop } from '@tabler/icons-react'
 
 export default function Settings(): ReactNode {
   const [theme, setThemeState] = useState<ThemeMode>(() => getStoredTheme())
+  const [fontScale, setFontScale] = useState<number>(() => {
+    const saved = localStorage.getItem('overlook-font-scale')
+    return saved ? Number(saved) : 1.0
+  })
   // const [radius, setRadius] = useState<number>(() => {
   //   const saved = localStorage.getItem('overlook-radius')
   //   return saved ? Number(saved) : 0.65
   // })
 
-  // useEffect(() => {
-  //   // Apply radius variable
-  //   document.documentElement.style.setProperty('--radius', `${radius}rem`)
-  //   localStorage.setItem('overlook-radius', String(radius))
-  // }, [radius])
+  useEffect(() => {
+    // Apply global font size via root element to scale rem-based UI
+    const percent = Math.round(fontScale * 100)
+    document.documentElement.style.fontSize = `${percent}%`
+    localStorage.setItem('overlook-font-scale', String(fontScale))
+  }, [fontScale])
 
   const onThemeChange = (val: string | undefined): void => {
     if (!val) return
@@ -60,6 +65,23 @@ export default function Settings(): ReactNode {
                 <ToggleGroupItem value="system">
                   <IconDeviceDesktop /> 跟随系统
                 </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Label>字体大小</Label>
+              <ToggleGroup
+                type="single"
+                value={String(fontScale)}
+                onValueChange={(val) => val && setFontScale(Number(val))}
+                spacing={0}
+                variant="outline"
+              >
+                <ToggleGroupItem value="0.9">90%</ToggleGroupItem>
+                <ToggleGroupItem value="1">100%</ToggleGroupItem>
+                <ToggleGroupItem value="1.1">110%</ToggleGroupItem>
+                <ToggleGroupItem value="1.25">125%</ToggleGroupItem>
+                <ToggleGroupItem value="1.5">150%</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
