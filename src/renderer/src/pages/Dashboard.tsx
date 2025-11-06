@@ -100,7 +100,7 @@ export default function Dashboard(): ReactNode {
     }
     const nextItems: Grid.GridLayoutItem[] = [
       ...(currentLayout?.items ?? []),
-      { i: id, x: 0, y: 0, w: 6, h: 8, config: nextCfg }
+      { i: id, x: 0, y: 0, w: 8, h: 20, config: nextCfg }
     ]
     updateLayoutItems(nextItems)
   }

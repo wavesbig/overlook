@@ -87,7 +87,7 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
       const next = { id, ...values } as Grid.CardConfig
       const items = [
         ...(currentLayout?.items ?? []),
-        { i: id, x: 0, y: 0, w: 6, h: 8, config: next }
+        { i: id, x: 0, y: 0, w: 8, h: 20, config: next }
       ]
       updateLayoutItems(items)
     } else if (mode === 'edit' && cfg) {
