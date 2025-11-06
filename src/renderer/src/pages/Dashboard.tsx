@@ -7,6 +7,7 @@ import CardGrid from '@renderer/components/grid/CardGrid'
 import { Button } from '@renderer/components/ui/button'
 import Empty from '@renderer/components/ui/empty'
 import { isValidUrl, normalizeUrl } from '@renderer/lib/webview'
+import { IconPlus, IconDownload, IconUpload } from '@tabler/icons-react'
 
 export default function Dashboard(): ReactNode {
   const {
@@ -154,15 +155,17 @@ export default function Dashboard(): ReactNode {
           )} */}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setAdding(true)}>
-            添加卡片
+          <Button variant="outline" size="default" onClick={() => setAdding(true)}>
+            <IconPlus size={16} /> 添加卡片
           </Button>
-          <Button variant="outline" onClick={downloadJSON}>
-            导出配置
+          <Button variant="outline" size="default" onClick={downloadJSON}>
+            <IconDownload size={16} /> 导出配置
           </Button>
           <label className="cursor-pointer">
-            <Button variant="outline" asChild>
-              <span>导入配置</span>
+            <Button variant="outline" size="default" asChild>
+              <span className="inline-flex items-center gap-1.5">
+                <IconUpload size={16} /> 导入配置
+              </span>
             </Button>
             <input
               type="file"
@@ -180,8 +183,8 @@ export default function Dashboard(): ReactNode {
       {/* Grid / Empty State */}
       {items.length === 0 ? (
         <Empty title="暂无卡片" description="点击“添加卡片”快速开始">
-          <Button variant="outline" onClick={() => setAdding(true)}>
-            添加卡片
+          <Button variant="outline" size="sm" onClick={() => setAdding(true)}>
+            <IconPlus size={16} /> 添加卡片
           </Button>
         </Empty>
       ) : (
