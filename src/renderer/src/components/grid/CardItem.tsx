@@ -24,6 +24,7 @@ import {
 import CardModal from './CardModal'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@renderer/components/ui/tooltip'
 import { Button } from '@renderer/components/ui/button'
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -38,7 +39,7 @@ import {
 type Props = { id: string }
 
 export default function CardItem({ id }: Props): ReactNode {
-  const { currentLayout, removeCard, upsertCard } = useGridStore()
+  const { currentLayout, removeCard, upsertCard, updateLayoutItems } = useGridStore()
   const cfg = currentLayout?.items.find((it) => it.i === id)?.config
 
   const [isFull, setIsFull] = useState(false)
@@ -96,7 +97,9 @@ export default function CardItem({ id }: Props): ReactNode {
     if (typeof z === 'number' && !Number.isNaN(z)) {
       try {
         webviewRef.current.setZoomFactor(z)
-      } catch {}
+      } catch {
+        console.error('Failed to set zoom factor', z)
+      }
     }
   }, [cfg?.zoomFactor])
 
@@ -131,9 +134,25 @@ export default function CardItem({ id }: Props): ReactNode {
     webviewRef.current?.reload()
   }
   const onCopy = async (): Promise<void> => {
-    if (!cfg) return
-    const data = JSON.stringify(cfg)
-    await navigator.clipboard.writeText(data)
+    if (!cfg || !currentLayout) return
+    const baseItem = currentLayout.items.find((it) => it.i === id)
+    const newId = `card-${crypto.randomUUID()}`
+    const nextCfg: Grid.CardConfig = {
+      ...cfg,
+      id: newId,
+      name: (cfg.name ? `${cfg.name} 副本` : '未命名 副本').slice(0, 32)
+    }
+    const fallbackW = 8
+    const fallbackH = 20
+    const w = baseItem?.w ?? fallbackW
+    const h = baseItem?.h ?? fallbackH
+    const maxY = Math.max(0, ...currentLayout.items.map((it) => it.y + it.h))
+    const nextItems: Grid.GridLayoutItem[] = [
+      ...currentLayout.items,
+      { i: newId, x: 0, y: maxY, w, h, config: nextCfg }
+    ]
+    updateLayoutItems(nextItems)
+    toast.success('已复制并添加到当前布局')
   }
   const onDelete = (): void => setConfirmOpen(true)
   const confirmDelete = (): void => {
@@ -182,7 +201,7 @@ export default function CardItem({ id }: Props): ReactNode {
           <Button variant="outline" size="icon-sm" aria-label="刷新" onClick={onRefresh}>
             <IconReload />
           </Button>
-          <Button variant="outline" size="icon-sm" aria-label="复制配置" onClick={onCopy}>
+          <Button variant="outline" size="icon-sm" aria-label="复制并添加" onClick={onCopy}>
             <IconCopy />
           </Button>
           <Tooltip>
