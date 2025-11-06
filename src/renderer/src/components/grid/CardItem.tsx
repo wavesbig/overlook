@@ -107,16 +107,18 @@ export default function CardItem({ id }: Props): ReactNode {
     >
       {/* Toolbar */}
       <div className="absolute p-2 z-10 flex justify-between w-full align-center opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" size="icon-sm" data-grid-drag-handle aria-label="拖拽移动">
-              <IconGripVertical size={16} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>拖拽以移动卡片</TooltipContent>
-        </Tooltip>
+        <div className="pointer-events-auto flex items-center  bg-background/70 backdrop-blur-sm border rounded-md p-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon-sm" data-grid-drag-handle aria-label="拖拽移动">
+                <IconGripVertical size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>拖拽以移动卡片</TooltipContent>
+          </Tooltip>
+        </div>
 
-        <div className="pointer-events-auto flex items-center gap-2 bg-background/70 backdrop-blur-sm border rounded-md px-2 py-1">
+        <div className="pointer-events-auto flex items-center gap-2 bg-background/70 backdrop-blur-sm border rounded-md p-1">
           <Button variant="outline" size="icon-sm" aria-label="刷新" onClick={onRefresh}>
             <IconReload />
           </Button>

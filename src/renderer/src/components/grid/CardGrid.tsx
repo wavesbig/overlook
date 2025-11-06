@@ -36,7 +36,13 @@ export default function CardGrid({
     const lg = all.lg || []
     const next: Grid.GridLayoutItem[] = lg.map((l) => {
       const existing = items.find((it) => it.i === l.i)
-      return { ...(existing ?? { i: l.i } as Grid.GridLayoutItem), x: l.x, y: l.y, w: l.w, h: l.h }
+      return {
+        ...(existing ?? ({ i: l.i } as Grid.GridLayoutItem)),
+        x: l.x,
+        y: l.y,
+        w: l.w,
+        h: l.h
+      }
     })
     onLayoutChange(next)
   }
