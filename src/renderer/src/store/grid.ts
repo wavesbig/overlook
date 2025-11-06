@@ -6,7 +6,7 @@ type GridState = {
   currentLayoutId?: string
   currentLayout?: Grid.Layout
   // actions
-  createLayout: (name: string) => void
+  createLayout: (name: string) => string
   renameLayout: (id: string, name: string) => void
   deleteLayout: (id: string) => void
   switchLayout: (id: string) => void
@@ -73,6 +73,7 @@ export const useGridStore = create<GridState>()(
         const layouts = [...get().layouts, l]
         set({ layouts, currentLayoutId: l.id, currentLayout: l })
         debounceSave(layouts, l.id)
+        return l.id
       },
       renameLayout(id, name) {
         const { layouts, currentLayoutId } = get()

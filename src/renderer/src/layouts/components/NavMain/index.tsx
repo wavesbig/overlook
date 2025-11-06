@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { IconCirclePlusFilled, Icon } from '@tabler/icons-react'
 import {
   SidebarGroup,
@@ -20,6 +20,7 @@ export default function NavMain({
   }[]
 }): ReactNode {
   const location = useLocation()
+  const navigate = useNavigate()
   const { createLayout } = useGridStore()
   return (
     <SidebarGroup>
@@ -29,7 +30,10 @@ export default function NavMain({
             <SidebarMenuButton
               tooltip="快速创建布局"
               className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
-              onClick={() => createLayout('新布局')}
+              onClick={() => {
+                const id = createLayout('新布局')
+                navigate(`/dashboard?id=${id}`)
+              }}
             >
               <IconCirclePlusFilled />
               <span>快速创建</span>

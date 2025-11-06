@@ -90,7 +90,10 @@ export default function NavDocuments(): ReactNode {
       <SidebarGroupAction
         aria-label="快速创建布局"
         title="快速创建布局"
-        onClick={() => createLayout('新布局')}
+        onClick={() => {
+          const id = createLayout('新布局')
+          navigate(`/dashboard?id=${id}`)
+        }}
       >
         <IconTablePlus />
       </SidebarGroupAction>
@@ -118,7 +121,10 @@ export default function NavDocuments(): ReactNode {
             variant="default"
             size="sm"
             className="w-full justify-start"
-            onClick={() => createLayout('新布局')}
+            onClick={() => {
+              const id = createLayout('新布局')
+              navigate(`/dashboard?id=${id}`)
+            }}
           >
             <IconTablePlus />
             <span>新建布局</span>
