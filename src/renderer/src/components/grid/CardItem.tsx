@@ -19,7 +19,9 @@ import {
   IconGripVertical,
   IconLink,
   IconZoomIn,
-  IconZoomOut
+  IconZoomOut,
+  IconEye,
+  IconEyeOff
 } from '@tabler/icons-react'
 import CardModal from './CardModal'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@renderer/components/ui/tooltip'
@@ -49,6 +51,7 @@ export default function CardItem({ id }: Props): ReactNode {
   const [isVisible, setIsVisible] = useState(true)
   const [editing, setEditing] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [controlsPinned, setControlsPinned] = useState(true)
 
   // Re-init webview when config changes or fullscreen toggles (portal remount)
   useEffect(() => {
@@ -176,64 +179,123 @@ export default function CardItem({ id }: Props): ReactNode {
       className={`group/card ${isFull ? 'fixed inset-0 z-1000 bg-background' : 'relative rounded-lg border'} h-full w-full overflow-hidden transition-all`}
     >
       {/* Toolbar */}
-      <div className="absolute p-2 z-10 flex justify-between w-full align-center opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto">
-        <div className="pointer-events-auto flex items-center  bg-background/70 backdrop-blur-sm border rounded-md p-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon-sm" data-grid-drag-handle aria-label="拖拽移动">
-                <IconGripVertical size={16} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>拖拽以移动卡片</TooltipContent>
-          </Tooltip>
-          {cfg?.name && (
-            <span
-              className="ml-2 flex items-center max-w-[48ch] truncate text-sm font-semibold text-foreground px-2"
-              title={cfg.name}
-            >
-              <IconLink size={14} className="mr-1" />
-              {cfg.name}
-            </span>
-          )}
-        </div>
+      {controlsPinned && (
+        <div className="absolute p-2 z-10 flex justify-between w-full align-center opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto">
+          <div className="pointer-events-auto flex items-center  bg-background/70 backdrop-blur-sm border rounded-md p-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  data-grid-drag-handle
+                  aria-label="拖拽移动"
+                >
+                  <IconGripVertical size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>拖拽以移动卡片</TooltipContent>
+            </Tooltip>
+            {cfg?.name && (
+              <span
+                className="ml-2 flex items-center max-w-[48ch] truncate text-sm font-semibold text-foreground px-2"
+                title={cfg.name}
+              >
+                <IconLink size={14} className="mr-1" />
+                {cfg.name}
+              </span>
+            )}
+          </div>
 
-        <div className="pointer-events-auto flex items-center gap-2 bg-background/70 backdrop-blur-sm border rounded-md p-1">
-          <Button variant="outline" size="icon-sm" aria-label="刷新" onClick={onRefresh}>
-            <IconReload />
-          </Button>
-          <Button variant="outline" size="icon-sm" aria-label="复制并添加" onClick={onCopy}>
-            <IconCopy />
-          </Button>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                aria-label="编辑"
-                onClick={() => setEditing(true)}
-              >
-                <IconPencil />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>编辑卡片</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                aria-label="全屏"
-                onClick={() => setIsFull((v) => !v)}
-              >
-                {isFull ? <IconArrowsMinimize /> : <IconArrowsMaximize />}
-                <TooltipContent>{isFull ? '退出全屏' : '全屏显示'}</TooltipContent>
-              </Button>
-            </TooltipTrigger>
-          </Tooltip>
-          <Button variant="destructive" size="icon-sm" aria-label="删除" onClick={onDelete}>
-            <IconTrash />
-          </Button>
+          <div className="pointer-events-auto flex items-center gap-2 bg-background/70 backdrop-blur-sm border rounded-md p-1">
+            <Button variant="outline" size="icon-sm" aria-label="刷新" onClick={onRefresh}>
+              <IconReload />
+            </Button>
+            <Button variant="outline" size="icon-sm" aria-label="复制并添加" onClick={onCopy}>
+              <IconCopy />
+            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label="编辑"
+                  onClick={() => setEditing(true)}
+                >
+                  <IconPencil />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>编辑卡片</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label="全屏"
+                  onClick={() => setIsFull((v) => !v)}
+                >
+                  {isFull ? <IconArrowsMinimize /> : <IconArrowsMaximize />}
+                  <TooltipContent>{isFull ? '退出全屏' : '全屏显示'}</TooltipContent>
+                </Button>
+              </TooltipTrigger>
+            </Tooltip>
+            <Button variant="destructive" size="icon-sm" aria-label="删除" onClick={onDelete}>
+              <IconTrash />
+            </Button>
+          </div>
         </div>
+      )}
+
+      {/* Quick zoom controls (bottom-right) */}
+      {controlsPinned && (
+        <div className="absolute bottom-2 right-2 z-10 opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto">
+          <div className="pointer-events-auto flex items-center gap-1 bg-background/70 backdrop-blur-sm border rounded-md p-1">
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label="缩小"
+              onClick={decZoom}
+              disabled={!cfg}
+            >
+              <IconZoomOut size={16} />
+            </Button>
+            <span className="px-1 text-xs tabular-nums min-w-[36px] text-center">
+              {Math.round((cfg?.zoomFactor ?? 1) * 100)}%
+            </span>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label="放大"
+              onClick={incZoom}
+              disabled={!cfg}
+            >
+              <IconZoomIn size={16} />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label="重置缩放"
+              onClick={resetZoom}
+              disabled={!cfg}
+            >
+              <span className="text-[10px] leading-none">100%</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Right-side toggle to expand/hide controls */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 pointer-events-auto transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto">
+        <Button
+          variant="secondary"
+          size="icon-sm"
+          className="bg-background/80 text-foreground border shadow-sm backdrop-blur-sm"
+          aria-label={controlsPinned ? '隐藏操作' : '显示操作'}
+          onClick={() => setControlsPinned((v) => !v)}
+          title={controlsPinned ? '隐藏操作' : '显示操作'}
+        >
+          {controlsPinned ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+        </Button>
       </div>
 
       {/* Delete confirm dialog */}
@@ -259,42 +321,6 @@ export default function CardItem({ id }: Props): ReactNode {
 
       {/* WebView content */}
       <webview ref={webviewRef} className="h-full w-full" />
-
-      {/* Quick zoom controls (bottom-right) */}
-      <div className="absolute bottom-2 right-2 z-10 opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto">
-        <div className="pointer-events-auto flex items-center gap-1 bg-background/70 backdrop-blur-sm border rounded-md p-1">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="缩小"
-            onClick={decZoom}
-            disabled={!cfg}
-          >
-            <IconZoomOut size={16} />
-          </Button>
-          <span className="px-1 text-xs tabular-nums min-w-[36px] text-center">
-            {Math.round((cfg?.zoomFactor ?? 1) * 100)}%
-          </span>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="放大"
-            onClick={incZoom}
-            disabled={!cfg}
-          >
-            <IconZoomIn size={16} />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="重置缩放"
-            onClick={resetZoom}
-            disabled={!cfg}
-          >
-            <span className="text-[10px] leading-none">100%</span>
-          </Button>
-        </div>
-      </div>
 
       {/* Edit modal */}
       {cfg && editing && (
