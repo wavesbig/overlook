@@ -111,7 +111,7 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="sm:max-w-[700px] w-[95vw] max-h-[80vh] overflow-y-auto">
         <AlertDialogHeader>
           <AlertDialogTitle>{mode === 'add' ? '添加卡片' : '编辑卡片'}</AlertDialogTitle>
           <AlertDialogDescription>
@@ -120,171 +120,191 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
         </AlertDialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid gap-4 py-4">
-              <FormField
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm flex items-center gap-1">
-                      <IconLink className="size-4 text-muted-foreground" /> 网站名称
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} maxLength={32} placeholder="例如：React 官网" />
-                    </FormControl>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm flex items-center gap-1">
-                      <IconLink className="size-4 text-muted-foreground" /> 网站 URL
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        aria-invalid={!isValidUrl(field.value)}
-                        placeholder="https://example.com"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="refreshInterval"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm flex items-center gap-1">
-                      <IconClock className="size-4 text-muted-foreground" /> 刷新间隔（秒）
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={10}
-                        step={10}
-                        value={field.value}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <IconClock size={14} /> 快速选择：
-                      </span>
-                      <ToggleGroup
-                        type="single"
-                        value={String(field.value)}
-                        onValueChange={(val) => val && field.onChange(Number(val))}
-                        spacing={0}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <ToggleGroupItem value="10">10s</ToggleGroupItem>
-                        <ToggleGroupItem value="30">30s</ToggleGroupItem>
-                        <ToggleGroupItem value="60">1m</ToggleGroupItem>
-                        <ToggleGroupItem value="300">5m</ToggleGroupItem>
-                        <ToggleGroupItem value="600">10m</ToggleGroupItem>
-                        <ToggleGroupItem value="3600">1h</ToggleGroupItem>
-                        <ToggleGroupItem value="18000">5h</ToggleGroupItem>
-                        <ToggleGroupItem value="86400">1天</ToggleGroupItem>
-                      </ToggleGroup>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="accessMode"
-                render={({ field }) => (
-                  <FormItem>
-                    <Label className="text-sm">访问模式</Label>
-                    <FormControl>
-                      <ToggleGroup
-                        type="single"
-                        value={field.value}
-                        onValueChange={(val) => val && field.onChange(val)}
-                        spacing={0}
-                        variant="outline"
-                      >
-                        <ToggleGroupItem value="pc">
-                          <IconDeviceDesktop /> PC
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="mobile">
-                          <IconDeviceMobile /> 移动端
-                        </ToggleGroupItem>
-                      </ToggleGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="targetSelector"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm flex items-center gap-1">
-                      <IconTarget className="size-4 text-muted-foreground" /> 目标选择器（可选）
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      只展示选择器命中的区域；留空显示整页。示例：#main .list
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="zoomFactor"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm flex items-center gap-1">
-                      <IconZoomIn className="size-4 text-muted-foreground" /> 页面缩放
-                    </FormLabel>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon-sm"
-                        aria-label="缩小"
-                        onClick={() => field.onChange(Math.max(0.5, (field.value ?? 1) - 0.05))}
-                      >
-                        <IconZoomOut size={16} />
-                      </Button>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 py-2">
+              <div className="space-y-4 md:col-span-2">
+                <FormField
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm flex items-center gap-1">
+                        <IconLink className="size-4 text-muted-foreground" /> 名称
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          type="range"
-                          min={50}
-                          max={300}
-                          step={5}
-                          className="w-40"
-                          value={Math.round((field.value ?? 1) * 100)}
-                          onChange={(e) => field.onChange(Number(e.target.value) / 100)}
+                          {...field}
+                          className="w-full"
+                          maxLength={32}
+                          placeholder="例如：React 官网"
                         />
                       </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon-sm"
-                        aria-label="放大"
-                        onClick={() => field.onChange(Math.min(3, (field.value ?? 1) + 0.05))}
-                      >
-                        <IconZoomIn size={16} />
-                      </Button>
-                      <span className="w-10 text-right text-xs tabular-nums">
-                        {Math.round((field.value ?? 1) * 100)}%
-                      </span>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  name="url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm flex items-center gap-1">
+                        <IconLink className="size-4 text-muted-foreground" /> URL
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          className="w-full"
+                          aria-invalid={!isValidUrl(field.value)}
+                          placeholder="https://example.com"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  name="accessMode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Label className="text-sm">访问模式</Label>
+                      <FormControl>
+                        <ToggleGroup
+                          type="single"
+                          value={field.value}
+                          onValueChange={(val) => val && field.onChange(val)}
+                          spacing={0}
+                          variant="outline"
+                        >
+                          <ToggleGroupItem value="pc">
+                            <IconDeviceDesktop /> PC
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="mobile">
+                            <IconDeviceMobile /> 移动端
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-5 md:col-span-3">
+                <FormField
+                  name="refreshInterval"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm flex items-center gap-1">
+                        <IconClock className="size-4 text-muted-foreground" /> 刷新间隔（秒）
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={10}
+                          step={10}
+                          className="w-32 md:w-40"
+                          value={field.value}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1 w-full md:w-auto">
+                          <IconClock size={14} /> 快速选择：
+                        </span>
+                        <ToggleGroup
+                          type="single"
+                          value={String(field.value)}
+                          onValueChange={(val) => val && field.onChange(Number(val))}
+                          spacing={2}
+                          variant="outline"
+                          size="sm"
+                          className="w-full flex-wrap"
+                        >
+                          <ToggleGroupItem className="px-2" value="10">10s</ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="30">30s</ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="60">1m</ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="300">5m</ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="600">10m</ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="3600">1h</ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="18000">5h</ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="86400">1天</ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  name="targetSelector"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm flex items-center gap-1">
+                        <IconTarget className="size-4 text-muted-foreground" /> 目标选择器（可选）
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          className="w-full md:max-w-[480px]"
+                          placeholder="#main .list"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        只展示选择器命中的区域；留空显示整页。示例：#main .list
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  name="zoomFactor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm flex items-center gap-1">
+                        <IconZoomIn className="size-4 text-muted-foreground" /> 页面缩放
+                      </FormLabel>
+                      <div className="flex items-center gap-3 w-full">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon-sm"
+                          aria-label="缩小"
+                          onClick={() => field.onChange(Math.max(0.5, (field.value ?? 1) - 0.05))}
+                        >
+                          <IconZoomOut size={16} />
+                        </Button>
+                        <FormControl>
+                          <Input
+                            type="range"
+                            min={50}
+                            max={300}
+                            step={5}
+                            className="flex-1 min-w-[200px]"
+                            value={Math.round((field.value ?? 1) * 100)}
+                            onChange={(e) => field.onChange(Number(e.target.value) / 100)}
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon-sm"
+                          aria-label="放大"
+                          onClick={() => field.onChange(Math.min(3, (field.value ?? 1) + 0.05))}
+                        >
+                          <IconZoomIn size={16} />
+                        </Button>
+                        <span className="w-12 text-right text-xs tabular-nums">
+                          {Math.round((field.value ?? 1) * 100)}%
+                        </span>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
+
             <AlertDialogFooter>
               <AlertDialogCancel asChild>
                 <Button type="button" variant="outline">
