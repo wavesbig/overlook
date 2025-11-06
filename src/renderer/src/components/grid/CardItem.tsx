@@ -16,7 +16,8 @@ import {
   IconPencil,
   IconReload,
   IconTrash,
-  IconGripVertical
+  IconGripVertical,
+  IconLink
 } from '@tabler/icons-react'
 import CardModal from './CardModal'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@renderer/components/ui/tooltip'
@@ -121,7 +122,7 @@ export default function CardItem({ id }: Props): ReactNode {
   const cardContent = (
     <div
       ref={containerRef}
-      className={`group/card ${isFull ? 'fixed inset-0 z-[1000] bg-background' : 'relative rounded-lg border'} h-full w-full overflow-hidden transition-all`}
+      className={`group/card ${isFull ? 'fixed inset-0 z-1000 bg-background' : 'relative rounded-lg border'} h-full w-full overflow-hidden transition-all`}
     >
       {/* Toolbar */}
       <div className="absolute p-2 z-10 flex justify-between w-full align-center opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto">
@@ -134,6 +135,15 @@ export default function CardItem({ id }: Props): ReactNode {
             </TooltipTrigger>
             <TooltipContent>拖拽以移动卡片</TooltipContent>
           </Tooltip>
+          {cfg?.name && (
+            <span
+              className="ml-2 flex items-center max-w-[48ch] truncate text-sm font-semibold text-foreground px-2"
+              title={cfg.name}
+            >
+              <IconLink size={14} className="mr-1" />
+              {cfg.name}
+            </span>
+          )}
         </div>
 
         <div className="pointer-events-auto flex items-center gap-2 bg-background/70 backdrop-blur-sm border rounded-md p-1">
