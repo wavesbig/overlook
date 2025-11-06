@@ -70,7 +70,9 @@ export default function CardItem({ id }: Props): ReactNode {
       if (typeof z === 'number' && !Number.isNaN(z)) {
         try {
           wv.setZoomFactor(z)
-        } catch {}
+        } catch {
+          console.error('Failed to set zoom factor', z)
+        }
       }
       if (cfg?.targetSelector) {
         wv.executeJavaScript(highlightSelectorScript(cfg.targetSelector)).catch(() => {})

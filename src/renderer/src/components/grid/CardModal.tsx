@@ -220,14 +220,30 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
                           size="sm"
                           className="w-full flex-wrap"
                         >
-                          <ToggleGroupItem className="px-2" value="10">10s</ToggleGroupItem>
-                          <ToggleGroupItem className="px-2" value="30">30s</ToggleGroupItem>
-                          <ToggleGroupItem className="px-2" value="60">1m</ToggleGroupItem>
-                          <ToggleGroupItem className="px-2" value="300">5m</ToggleGroupItem>
-                          <ToggleGroupItem className="px-2" value="600">10m</ToggleGroupItem>
-                          <ToggleGroupItem className="px-2" value="3600">1h</ToggleGroupItem>
-                          <ToggleGroupItem className="px-2" value="18000">5h</ToggleGroupItem>
-                          <ToggleGroupItem className="px-2" value="86400">1天</ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="10">
+                            10s
+                          </ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="30">
+                            30s
+                          </ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="60">
+                            1m
+                          </ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="300">
+                            5m
+                          </ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="600">
+                            10m
+                          </ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="3600">
+                            1h
+                          </ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="18000">
+                            5h
+                          </ToggleGroupItem>
+                          <ToggleGroupItem className="px-2" value="86400">
+                            1天
+                          </ToggleGroupItem>
                         </ToggleGroup>
                       </div>
                       <FormMessage />
@@ -277,8 +293,8 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
                         <FormControl>
                           <Input
                             type="range"
-                            min={50}
-                            max={300}
+                            min={10}
+                            max={500}
                             step={5}
                             className="flex-1 min-w-[200px]"
                             value={Math.round((field.value ?? 1) * 100)}
