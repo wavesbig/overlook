@@ -219,7 +219,9 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
-                    <FormDescription>用于聚焦页面特定区域，比如某个列表或卡片容器</FormDescription>
+                    <FormDescription>
+                      只展示选择器命中的区域；留空显示整页。示例：#main .list
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
