@@ -11,6 +11,8 @@ declare namespace Grid {
     refreshInterval: RefreshInterval
     accessMode: AccessMode
     targetSelector?: string
+    // WebView 缩放因子，默认 1（100%），范围建议 0.5~3
+    zoomFactor?: number
   }
 
   type GridLayoutItem = {

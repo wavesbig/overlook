@@ -29,7 +29,9 @@ import {
   IconDeviceDesktop,
   IconDeviceMobile,
   IconLink,
-  IconTarget
+  IconTarget,
+  IconZoomIn,
+  IconZoomOut
 } from '@tabler/icons-react'
 import { useGridStore } from '@renderer/store/grid'
 import { isValidUrl } from '@renderer/lib/webview'
@@ -51,7 +53,8 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
     url: z.string().refine((val) => isValidUrl(val), { message: 'URL格式不正确' }),
     refreshInterval: z.number().int().min(10, '至少10秒'),
     accessMode: z.enum(['pc', 'mobile']),
-    targetSelector: z.string().optional()
+    targetSelector: z.string().optional(),
+    zoomFactor: z.number().min(0.5, '至少 50%').max(3, '最多 300%').optional()
   })
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -62,7 +65,8 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
       url: cfg?.url || '',
       refreshInterval: cfg?.refreshInterval ?? 300,
       accessMode: (cfg?.accessMode ?? 'pc') as Grid.AccessMode,
-      targetSelector: cfg?.targetSelector || ''
+      targetSelector: cfg?.targetSelector || '',
+      zoomFactor: cfg?.zoomFactor ?? 1
     }
   })
 
@@ -73,10 +77,18 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
         url: cfg.url || '',
         refreshInterval: cfg.refreshInterval ?? 300,
         accessMode: (cfg.accessMode ?? 'pc') as Grid.AccessMode,
-        targetSelector: cfg.targetSelector || ''
+        targetSelector: cfg.targetSelector || '',
+        zoomFactor: cfg.zoomFactor ?? 1
       })
     } else if (mode === 'add') {
-      form.reset({ name: '', url: '', refreshInterval: 300, accessMode: 'pc', targetSelector: '' })
+      form.reset({
+        name: '',
+        url: '',
+        refreshInterval: 300,
+        accessMode: 'pc',
+        targetSelector: '',
+        zoomFactor: 1
+      })
     }
   }, [mode, cfg])
 
@@ -124,6 +136,7 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
                   </FormItem>
                 )}
               />
+
               <FormField
                 name="url"
                 render={({ field }) => (
@@ -222,6 +235,51 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
                     <FormDescription>
                       只展示选择器命中的区域；留空显示整页。示例：#main .list
                     </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="zoomFactor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm flex items-center gap-1">
+                      <IconZoomIn className="size-4 text-muted-foreground" /> 页面缩放
+                    </FormLabel>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon-sm"
+                        aria-label="缩小"
+                        onClick={() => field.onChange(Math.max(0.5, (field.value ?? 1) - 0.05))}
+                      >
+                        <IconZoomOut size={16} />
+                      </Button>
+                      <FormControl>
+                        <Input
+                          type="range"
+                          min={50}
+                          max={300}
+                          step={5}
+                          className="w-40"
+                          value={Math.round((field.value ?? 1) * 100)}
+                          onChange={(e) => field.onChange(Number(e.target.value) / 100)}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon-sm"
+                        aria-label="放大"
+                        onClick={() => field.onChange(Math.min(3, (field.value ?? 1) + 0.05))}
+                      >
+                        <IconZoomIn size={16} />
+                      </Button>
+                      <span className="w-10 text-right text-xs tabular-nums">
+                        {Math.round((field.value ?? 1) * 100)}%
+                      </span>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

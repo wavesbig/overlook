@@ -17,7 +17,9 @@ import {
   IconReload,
   IconTrash,
   IconGripVertical,
-  IconLink
+  IconLink,
+  IconZoomIn,
+  IconZoomOut
 } from '@tabler/icons-react'
 import CardModal from './CardModal'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@renderer/components/ui/tooltip'
@@ -36,7 +38,7 @@ import {
 type Props = { id: string }
 
 export default function CardItem({ id }: Props): ReactNode {
-  const { currentLayout, removeCard } = useGridStore()
+  const { currentLayout, removeCard, upsertCard } = useGridStore()
   const cfg = currentLayout?.items.find((it) => it.i === id)?.config
 
   const [isFull, setIsFull] = useState(false)
@@ -63,6 +65,13 @@ export default function CardItem({ id }: Props): ReactNode {
     }
     const onDomReady = (): void => {
       setError(null)
+      // Apply zoom factor when webview DOM is ready
+      const z = cfg?.zoomFactor ?? 1
+      if (typeof z === 'number' && !Number.isNaN(z)) {
+        try {
+          wv.setZoomFactor(z)
+        } catch {}
+      }
       if (cfg?.targetSelector) {
         wv.executeJavaScript(highlightSelectorScript(cfg.targetSelector)).catch(() => {})
       }
@@ -77,6 +86,17 @@ export default function CardItem({ id }: Props): ReactNode {
       wv.removeEventListener('did-fail-load', onFail)
     }
   }, [cfg, isFull])
+
+  // Update zoom factor when config changes without reloading
+  useEffect(() => {
+    const z = cfg?.zoomFactor ?? 1
+    if (!webviewRef.current) return
+    if (typeof z === 'number' && !Number.isNaN(z)) {
+      try {
+        webviewRef.current.setZoomFactor(z)
+      } catch {}
+    }
+  }, [cfg?.zoomFactor])
 
   // Track visibility of the card to avoid refreshing when off-screen
   useEffect(() => {
@@ -118,6 +138,16 @@ export default function CardItem({ id }: Props): ReactNode {
     removeCard(id)
     setConfirmOpen(false)
   }
+
+  const clampZoom = (z: number): number => Math.max(0.5, Math.min(3, Number.isFinite(z) ? z : 1))
+  const setZoom = (z: number): void => {
+    if (!cfg) return
+    const next = { ...cfg, zoomFactor: clampZoom(z) }
+    upsertCard(next)
+  }
+  const incZoom = (): void => setZoom((cfg?.zoomFactor ?? 1) + 0.1)
+  const decZoom = (): void => setZoom((cfg?.zoomFactor ?? 1) - 0.1)
+  const resetZoom = (): void => setZoom(1)
 
   const cardContent = (
     <div
@@ -208,6 +238,42 @@ export default function CardItem({ id }: Props): ReactNode {
 
       {/* WebView content */}
       <webview ref={webviewRef} className="h-full w-full" />
+
+      {/* Quick zoom controls (bottom-right) */}
+      <div className="absolute bottom-2 right-2 z-10 opacity-0 pointer-events-none transition-opacity duration-200 group-hover/card:opacity-100 group-hover/card:pointer-events-auto">
+        <div className="pointer-events-auto flex items-center gap-1 bg-background/70 backdrop-blur-sm border rounded-md p-1">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label="缩小"
+            onClick={decZoom}
+            disabled={!cfg}
+          >
+            <IconZoomOut size={16} />
+          </Button>
+          <span className="px-1 text-xs tabular-nums min-w-[36px] text-center">
+            {Math.round((cfg?.zoomFactor ?? 1) * 100)}%
+          </span>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label="放大"
+            onClick={incZoom}
+            disabled={!cfg}
+          >
+            <IconZoomIn size={16} />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label="重置缩放"
+            onClick={resetZoom}
+            disabled={!cfg}
+          >
+            <span className="text-[10px] leading-none">100%</span>
+          </Button>
+        </div>
+      </div>
 
       {/* Edit modal */}
       {cfg && editing && (

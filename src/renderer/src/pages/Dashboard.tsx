@@ -97,7 +97,8 @@ export default function Dashboard(): ReactNode {
       name,
       url,
       refreshInterval: 300,
-      accessMode: 'pc'
+      accessMode: 'pc',
+      zoomFactor: 1
     }
     const nextItems: Grid.GridLayoutItem[] = [
       ...(currentLayout?.items ?? []),
