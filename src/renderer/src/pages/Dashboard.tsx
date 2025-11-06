@@ -53,7 +53,7 @@ export default function Dashboard(): ReactNode {
       {/* Header actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">主看板</h1>
+          <h1 className="text-2xl font-semibold">{currentLayout?.name ?? '主看板'}</h1>
           {/* {!isOnline && (
             <span className="text-xs px-2 py-1 rounded bg-amber-200/60 text-amber-900">
               离线模式，恢复后自动刷新
