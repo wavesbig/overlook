@@ -81,7 +81,6 @@ export default function CardModal({ mode, open, onOpenChange, cfg }: Props): Rea
   }, [mode, cfg])
 
   const onSubmit = (values: z.infer<typeof formSchema>): void => {
-    console.log('🚀 ~ onSubmit ~ values:', values)
     if (!isValidUrl(values.url) || !values.name.trim()) return
     if (mode === 'add') {
       const id = `card-${crypto.randomUUID()}`

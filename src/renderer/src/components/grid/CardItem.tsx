@@ -37,10 +37,12 @@ type Props = { id: string }
 export default function CardItem({ id }: Props): ReactNode {
   const { currentLayout, removeCard } = useGridStore()
   const cfg = currentLayout?.items.find((it) => it.i === id)?.config
-  console.log('🚀 ~ CardItem ~ currentLayout:', currentLayout)
+
   const [isFull, setIsFull] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [isVisible, setIsVisible] = useState(true)
   const [editing, setEditing] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
 
@@ -60,7 +62,6 @@ export default function CardItem({ id }: Props): ReactNode {
     }
     const onDomReady = (): void => {
       setError(null)
-      console.log('🚀 ~ onDomReady ~ cfg?.targetSelector:', cfg?.targetSelector)
       if (cfg?.targetSelector) {
         wv.executeJavaScript(highlightSelectorScript(cfg.targetSelector)).catch(() => {})
       }
@@ -76,16 +77,32 @@ export default function CardItem({ id }: Props): ReactNode {
     }
   }, [cfg, isFull])
 
+  // Track visibility of the card to avoid refreshing when off-screen
+  useEffect(() => {
+    if (!containerRef.current) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        setIsVisible(entry.isIntersecting)
+      },
+      { threshold: 0.2 }
+    )
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   useEffect(() => {
     if (!cfg) return
-    const id = window.setInterval(
-      () => {
-        webviewRef.current?.reload()
-      },
-      (cfg.refreshInterval || 300) * 1000
-    )
+    const intervalSec = cfg.refreshInterval ?? 300
+    if (!intervalSec || intervalSec <= 0) return
+    const tick = (): void => {
+      if (document.hidden) return
+      if (!isVisible) return
+      webviewRef.current?.reload()
+    }
+    const id = window.setInterval(tick, intervalSec * 1000)
     return () => clearInterval(id)
-  }, [cfg?.refreshInterval])
+  }, [cfg?.refreshInterval, isVisible])
 
   const onRefresh = (): void => {
     webviewRef.current?.reload()
@@ -103,6 +120,7 @@ export default function CardItem({ id }: Props): ReactNode {
 
   const cardContent = (
     <div
+      ref={containerRef}
       className={`group/card ${isFull ? 'fixed inset-0 z-[1000] bg-background' : 'relative rounded-lg border'} h-full w-full overflow-hidden transition-all`}
     >
       {/* Toolbar */}
