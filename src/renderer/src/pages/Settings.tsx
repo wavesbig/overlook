@@ -1,34 +1,21 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode } from 'react'
 import { Card, CardContent, CardHeader } from '@renderer/components/ui/card'
 import { ToggleGroup, ToggleGroupItem } from '@renderer/components/ui/toggle-group'
 import { Label } from '@renderer/components/ui/label'
-import { setTheme, getStoredTheme, type ThemeMode } from '@renderer/lib/theme'
 import { IconSun, IconMoon, IconDeviceDesktop } from '@tabler/icons-react'
+import { useSettingsStore } from '@renderer/store/settings'
 // import { Input } from '@renderer/components/ui/input'
 
 export default function Settings(): ReactNode {
-  const [theme, setThemeState] = useState<ThemeMode>(() => getStoredTheme())
-  const [fontScale, setFontScale] = useState<number>(() => {
-    const saved = localStorage.getItem('overlook-font-scale')
-    return saved ? Number(saved) : 1.0
-  })
-  // const [radius, setRadius] = useState<number>(() => {
-  //   const saved = localStorage.getItem('overlook-radius')
-  //   return saved ? Number(saved) : 0.65
-  // })
-
-  useEffect(() => {
-    // Apply global font size via root element to scale rem-based UI
-    const percent = Math.round(fontScale * 100)
-    document.documentElement.style.fontSize = `${percent}%`
-    localStorage.setItem('overlook-font-scale', String(fontScale))
-  }, [fontScale])
+  const theme = useSettingsStore((s) => s.themeMode)
+  const setThemeMode = useSettingsStore((s) => s.setThemeMode)
+  const fontScale = useSettingsStore((s) => s.fontScale)
+  const setFontScale = useSettingsStore((s) => s.setFontScale)
 
   const onThemeChange = (val: string | undefined): void => {
     if (!val) return
-    const m = val as ThemeMode
-    setThemeState(m)
-    setTheme(m)
+    const m = val as Settings.ThemeMode
+    setThemeMode(m)
   }
 
   return (

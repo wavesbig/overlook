@@ -40,6 +40,16 @@ declare namespace Grid {
   type Layouts = Grid.Layout[]
 }
 
+declare namespace Settings {
+  type ThemeMode = 'light' | 'dark' | 'system'
+  type FontScale = number
+
+  type Settings = {
+    themeMode: ThemeMode
+    fontScale: FontScale
+  }
+}
+
 // ElectronStore namespace: centralize all Store-related typing
 declare namespace ElectronStore {
   // Store value map to centralize key→value typing
@@ -47,6 +57,8 @@ declare namespace ElectronStore {
     // 仅保留新版键：多布局与当前布局选择
     layouts?: Grid.Layouts
     currentLayoutId?: string
+    // 新增：全局偏好设置（统一归于 settings 对象）
+    settings?: Settings.Settings
   }
 
   // Centralized key and entry helpers

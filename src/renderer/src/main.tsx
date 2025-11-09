@@ -3,10 +3,7 @@ import './assets/main.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
-import { initTheme } from '@renderer/lib/theme'
-
-// Initialize theme before rendering
-initTheme()
+import '@renderer/store/settings'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

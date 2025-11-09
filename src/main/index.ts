@@ -4,7 +4,7 @@ import { existsSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 // Centralized electron-store in main process (direct import)
-import { getStoreValue, setStoreValue } from './gridcardsStore'
+import { getStoreValue, setStoreValue } from './electron-store'
 
 function createWindow(): void {
   // Create the browser window.

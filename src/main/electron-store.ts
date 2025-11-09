@@ -5,7 +5,16 @@ const store = new Store<ElectronStore.StoreValueMap>({
   schema: {
     // 仅保留新版键
     layouts: { type: 'array' },
-    currentLayoutId: { type: 'string' }
+    currentLayoutId: { type: 'string' },
+
+    // 偏好设置：主题与字体缩放（统一归于 settings 对象）
+    settings: {
+      type: 'object',
+      properties: {
+        themeMode: { type: 'string', enum: ['light', 'dark', 'system'] },
+        fontScale: { type: 'number' }
+      }
+    }
   }
 })
 
