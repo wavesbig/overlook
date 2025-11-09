@@ -41,13 +41,17 @@ const repository = {
     }
     return null
   },
-  persist(layouts: Grid.Layouts, currentLayoutId?: string): void {
+  persist(data: Partial<{ layouts: Grid.Layouts; currentLayoutId?: string }>): void {
     try {
       if (window.api?.storeSet) {
-        void Promise.all([
-          window.api.storeSet('layouts', layouts),
-          window.api.storeSet('currentLayoutId', currentLayoutId ?? '')
-        ])
+        const ops: Promise<void>[] = []
+        if ('layouts' in data) {
+          ops.push(window.api.storeSet('layouts', data.layouts))
+        }
+        if ('currentLayoutId' in data) {
+          ops.push(window.api.storeSet('currentLayoutId', data.currentLayoutId ?? ''))
+        }
+        if (ops.length) void Promise.all(ops)
       }
     } catch {
       // ignore
@@ -56,9 +60,9 @@ const repository = {
 }
 
 let saveTimer: number | undefined
-function debounceSave(layouts: Grid.Layouts, currentLayoutId?: string): void {
+function debounceSave(payload: Partial<{ layouts: Grid.Layouts; currentLayoutId?: string }>): void {
   if (saveTimer) clearTimeout(saveTimer)
-  saveTimer = window.setTimeout(() => repository.persist(layouts, currentLayoutId), 400)
+  saveTimer = window.setTimeout(() => repository.persist(payload), 400)
 }
 
 export const useGridStore = create<GridState>()(
@@ -72,7 +76,7 @@ export const useGridStore = create<GridState>()(
         l.name = name
         const layouts = [...get().layouts, l]
         set({ layouts, currentLayoutId: l.id, currentLayout: l })
-        debounceSave(layouts, l.id)
+        debounceSave({ layouts, currentLayoutId: l.id })
         return l.id
       },
       renameLayout(id, name) {
@@ -82,7 +86,7 @@ export const useGridStore = create<GridState>()(
         )
         const nextCurrent = nextLayouts.find((l) => l.id === currentLayoutId)
         set({ layouts: nextLayouts, currentLayout: nextCurrent })
-        debounceSave(nextLayouts, currentLayoutId)
+        debounceSave({ layouts: nextLayouts, currentLayoutId })
       },
       deleteLayout(id) {
         const { layouts, currentLayoutId } = get()
@@ -90,7 +94,7 @@ export const useGridStore = create<GridState>()(
         if (filtered.length === 0) {
           const l = DEFAULT_LAYOUT()
           set({ layouts: [l], currentLayoutId: l.id, currentLayout: l })
-          debounceSave([l], l.id)
+          debounceSave({ layouts: [l], currentLayoutId: l.id })
           return
         }
         let nextId = currentLayoutId
@@ -100,13 +104,13 @@ export const useGridStore = create<GridState>()(
           nextCurrent = filtered[0]
         }
         set({ layouts: filtered, currentLayoutId: nextId, currentLayout: nextCurrent })
-        debounceSave(filtered, nextId)
+        debounceSave({ layouts: filtered, currentLayoutId: nextId })
       },
       switchLayout(id) {
         const next = get().layouts.find((l) => l.id === id)
         if (!next) return
         set({ currentLayoutId: id, currentLayout: next })
-        debounceSave(get().layouts, id)
+        debounceSave({ currentLayoutId: id })
       },
       updateLayoutItems(items) {
         const { currentLayoutId, layouts } = get()
@@ -114,7 +118,7 @@ export const useGridStore = create<GridState>()(
         const nextLayouts = layouts.map((l) => (l.id === currentLayoutId ? { ...l, items } : l))
         const nextCurrent = nextLayouts.find((l) => l.id === currentLayoutId)
         set({ layouts: nextLayouts, currentLayout: nextCurrent })
-        debounceSave(nextLayouts, currentLayoutId)
+        debounceSave({ layouts: nextLayouts })
       },
       upsertCard(card) {
         const { currentLayoutId, layouts } = get()
@@ -128,7 +132,7 @@ export const useGridStore = create<GridState>()(
         })
         const nextCurrent = nextLayouts.find((l) => l.id === currentLayoutId)
         set({ layouts: nextLayouts, currentLayout: nextCurrent })
-        debounceSave(nextLayouts, currentLayoutId)
+        debounceSave({ layouts: nextLayouts })
       },
       removeCard(id) {
         const { currentLayoutId, layouts } = get()
@@ -138,13 +142,13 @@ export const useGridStore = create<GridState>()(
         )
         const nextCurrent = nextLayouts.find((l) => l.id === currentLayoutId)
         set({ layouts: nextLayouts, currentLayout: nextCurrent })
-        debounceSave(nextLayouts, currentLayoutId)
+        debounceSave({ layouts: nextLayouts })
       },
       importAll(data) {
         set({ layouts: data.layouts, currentLayoutId: data.currentLayoutId })
         const current = data.layouts.find((l) => l.id === data.currentLayoutId) ?? data.layouts[0]
         set({ currentLayout: current })
-        repository.persist(data.layouts, data.currentLayoutId)
+        repository.persist({ layouts: data.layouts, currentLayoutId: data.currentLayoutId })
       },
       exportAll() {
         return { layouts: get().layouts, currentLayoutId: get().currentLayoutId }
