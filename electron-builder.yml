@@ -44,5 +44,6 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  # owner/repo 将从 package.json 的 repository 自动识别
+  releaseType: draft

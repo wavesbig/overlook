@@ -1,0 +1,78 @@
+name: Release on version change
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.detect.outputs.changed }}
+      version: ${{ steps.detect.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect version change
+        id: detect
+        shell: bash
+        run: |
+          node << 'NODE'
+          const {execSync}=require('child_process');
+          const fs=require('fs');
+          const curr = JSON.parse(fs.readFileSync('package.json','utf8')).version||'';
+          let prev='';
+          try{ const s=execSync('git show HEAD^:package.json',{stdio:['ignore','pipe','ignore']}).toString(); prev=JSON.parse(s).version||''; }catch(e){ prev=''; }
+          const changed = curr!==prev;
+          console.log(`Current version: ${curr}`);
+          console.log(`Previous version: ${prev}`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `changed=${changed}\nversion=${curr}\n`);
+          NODE
+
+  build:
+    if: needs.detect.outputs.changed == 'true'
+    needs: detect
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (renderer + main)
+        run: npm run build
+
+      - name: Package & Publish (electron-builder)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            npx electron-builder --publish always --win
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            npx electron-builder --publish always --mac
+          else
+            npx electron-builder --publish always --linux
+          fi
