@@ -1,6 +1,24 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+// 约定：布局名称最大长度
+const MAX_NAME_LEN = 32
+
+// 工具：裁剪并提供默认名称
+function sanitizeName(name: string): string {
+  return name.slice(0, MAX_NAME_LEN) || '未命名布局'
+}
+
+// 工具：根据 id 计算当前布局
+function computeCurrent(layouts: Grid.Layouts, id?: string): Grid.Layout | undefined {
+  return layouts.find((l) => l.id === id)
+}
+
+// Grid 的全局状态与操作
+// - layouts：所有布局列表
+// - currentLayoutId：当前布局的 id
+// - currentLayout：当前布局对象（便于组件直接读取）
+// - actions：所有对布局与卡片的增删改操作
 type GridState = {
   layouts: Grid.Layouts
   currentLayoutId?: string
@@ -23,6 +41,7 @@ const DEFAULT_LAYOUT = (): Grid.Layout => ({
   items: []
 })
 
+// 持久化仓库：与主进程 electron-store 交互
 const repository = {
   async hydrate(): Promise<{ layouts: Grid.Layouts; currentLayoutId?: string } | null> {
     try {
@@ -45,6 +64,7 @@ const repository = {
     try {
       if (window.api?.storeSet) {
         const ops: Promise<void>[] = []
+        // 仅持久化传入的字段，避免无效写入
         if ('layouts' in data) {
           ops.push(window.api.storeSet('layouts', data.layouts))
         }
@@ -59,6 +79,7 @@ const repository = {
   }
 }
 
+// 防抖写入：批量且延迟持久化，减少频繁 IO
 let saveTimer: number | undefined
 function debounceSave(payload: Partial<{ layouts: Grid.Layouts; currentLayoutId?: string }>): void {
   if (saveTimer) clearTimeout(saveTimer)
@@ -73,7 +94,7 @@ export const useGridStore = create<GridState>()(
       currentLayout: undefined,
       createLayout(name) {
         const l = DEFAULT_LAYOUT()
-        l.name = name
+        l.name = sanitizeName(name)
         const layouts = [...get().layouts, l]
         set({ layouts, currentLayoutId: l.id, currentLayout: l })
         debounceSave({ layouts, currentLayoutId: l.id })
@@ -82,9 +103,9 @@ export const useGridStore = create<GridState>()(
       renameLayout(id, name) {
         const { layouts, currentLayoutId } = get()
         const nextLayouts = layouts.map((l) =>
-          l.id === id ? { ...l, name: name.slice(0, 32) || '未命名布局' } : l
+          l.id === id ? { ...l, name: sanitizeName(name) } : l
         )
-        const nextCurrent = nextLayouts.find((l) => l.id === currentLayoutId)
+        const nextCurrent = computeCurrent(nextLayouts, currentLayoutId)
         set({ layouts: nextLayouts, currentLayout: nextCurrent })
         debounceSave({ layouts: nextLayouts, currentLayoutId })
       },
@@ -98,7 +119,7 @@ export const useGridStore = create<GridState>()(
           return
         }
         let nextId = currentLayoutId
-        let nextCurrent = filtered.find((l) => l.id === nextId)
+        let nextCurrent = computeCurrent(filtered, nextId)
         if (!nextCurrent || currentLayoutId === id) {
           nextId = filtered[0].id
           nextCurrent = filtered[0]
@@ -107,6 +128,9 @@ export const useGridStore = create<GridState>()(
         debounceSave({ layouts: filtered, currentLayoutId: nextId })
       },
       switchLayout(id) {
+        const { currentLayoutId } = get()
+        // 已是当前布局则跳过，无需重复保存
+        if (currentLayoutId === id) return
         const next = get().layouts.find((l) => l.id === id)
         if (!next) return
         set({ currentLayoutId: id, currentLayout: next })
@@ -116,7 +140,7 @@ export const useGridStore = create<GridState>()(
         const { currentLayoutId, layouts } = get()
         if (!currentLayoutId) return
         const nextLayouts = layouts.map((l) => (l.id === currentLayoutId ? { ...l, items } : l))
-        const nextCurrent = nextLayouts.find((l) => l.id === currentLayoutId)
+        const nextCurrent = computeCurrent(nextLayouts, currentLayoutId)
         set({ layouts: nextLayouts, currentLayout: nextCurrent })
         debounceSave({ layouts: nextLayouts })
       },
@@ -130,7 +154,7 @@ export const useGridStore = create<GridState>()(
           )
           return { ...l, items: nextItems }
         })
-        const nextCurrent = nextLayouts.find((l) => l.id === currentLayoutId)
+        const nextCurrent = computeCurrent(nextLayouts, currentLayoutId)
         set({ layouts: nextLayouts, currentLayout: nextCurrent })
         debounceSave({ layouts: nextLayouts })
       },
@@ -140,13 +164,13 @@ export const useGridStore = create<GridState>()(
         const nextLayouts = layouts.map((l) =>
           l.id === currentLayoutId ? { ...l, items: l.items.filter((it) => it.i !== id) } : l
         )
-        const nextCurrent = nextLayouts.find((l) => l.id === currentLayoutId)
+        const nextCurrent = computeCurrent(nextLayouts, currentLayoutId)
         set({ layouts: nextLayouts, currentLayout: nextCurrent })
         debounceSave({ layouts: nextLayouts })
       },
       importAll(data) {
         set({ layouts: data.layouts, currentLayoutId: data.currentLayoutId })
-        const current = data.layouts.find((l) => l.id === data.currentLayoutId) ?? data.layouts[0]
+        const current = computeCurrent(data.layouts, data.currentLayoutId) ?? data.layouts[0]
         set({ currentLayout: current })
         repository.persist({ layouts: data.layouts, currentLayoutId: data.currentLayoutId })
       },
