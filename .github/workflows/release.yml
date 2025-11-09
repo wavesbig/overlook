@@ -67,12 +67,7 @@ jobs:
       - name: Build (renderer + main)
         run: npm run build
 
-      - name: Package & Publish (electron-builder)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-        if: false
-
+      
       - name: Package & Publish (Windows)
         if: runner.os == 'Windows'
         env:
