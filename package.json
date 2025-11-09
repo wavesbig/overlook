@@ -2,7 +2,7 @@
   "name": "overlook",
   "version": "1.0.1",
   "type": "module",
-  "description": "An Electron application with React and TypeScript",
+  "description": "一个使用 Electron + React + TypeScript + Vite 构建的桌面应用，用于以网格卡片的形式快速浏览和操作网页内容。",
   "main": "./out/main/index.js",
   "author": "example.com",
   "homepage": "https://electron-vite.org",
