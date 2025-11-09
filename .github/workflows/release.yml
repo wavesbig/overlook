@@ -71,11 +71,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
-        run: |
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            npx electron-builder --publish always --win
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            npx electron-builder --publish always --mac
-          else
-            npx electron-builder --publish always --linux
-          fi
+        if: false
+
+      - name: Package & Publish (Windows)
+        if: runner.os == 'Windows'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npx electron-builder --publish always --win
+
+      - name: Package & Publish (macOS)
+        if: runner.os == 'macOS'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npx electron-builder --publish always --mac
+
+      - name: Package & Publish (Linux)
+        if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npx electron-builder --publish always --linux
