@@ -46,4 +46,4 @@ npmRebuild: false
 publish:
   provider: github
   # owner/repo 将从 package.json 的 repository 自动识别
-  releaseType: draft
+  releaseType: release

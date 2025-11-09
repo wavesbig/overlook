@@ -5,6 +5,9 @@ on:
     branches: [ main ]
     paths:
       - 'package.json'
+    tags:
+      - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -42,7 +45,7 @@ jobs:
           NODE
 
   build:
-    if: needs.detect.outputs.changed == 'true'
+    if: needs.detect.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
     needs: detect
     strategy:
       matrix:
