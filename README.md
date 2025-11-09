@@ -126,19 +126,19 @@ src/
 <p align="center">
   <img src="./docs/image1.png" alt="Overlook 截图 1" width="720" />
   <br/>
-  <em>截图 1：主看板布局与卡片工具栏</em>
+  <em>截图 1：侧边栏与设置页面</em>
 </p>
 
 <p align="center">
   <img src="./docs/image2.png" alt="Overlook 截图 2" width="720" />
   <br/>
-  <em>截图 2：卡片编辑与复制并添加</em>
+  <em>截图 2：卡片添加与编辑</em>
 </p>
 
 <p align="center">
   <img src="./docs/image3.png" alt="Overlook 截图 3" width="720" />
   <br/>
-  <em>截图 3：快速缩放与全屏</em>
+  <em>截图 3：卡片的快速操作</em>
 </p>
 
 <p align="center">
