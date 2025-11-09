@@ -15,10 +15,6 @@
 - 主题与组件：采用 `shadcn/ui`、`next-themes`、`tabler-icons-react`
 - 通知提醒：使用 `sonner` 显示复制等成功提示
 
-## 截图
-
-（在 `docs/` 目录添加截图后放到这里）
-
 ## 快速开始
 
 ### 环境要求
@@ -122,6 +118,34 @@ src/
 - UI：`shadcn/ui`、`tabler-icons-react`
 - 主题：`next-themes`
 - 通知：`sonner`
+
+## 截图预览
+
+下图展示了应用的主要界面与交互：
+
+<p align="center">
+  <img src="./docs/image1.png" alt="Overlook 截图 1" width="720" />
+  <br/>
+  <em>截图 1：主看板布局与卡片工具栏</em>
+</p>
+
+<p align="center">
+  <img src="./docs/image2.png" alt="Overlook 截图 2" width="720" />
+  <br/>
+  <em>截图 2：卡片编辑与复制并添加</em>
+</p>
+
+<p align="center">
+  <img src="./docs/image3.png" alt="Overlook 截图 3" width="720" />
+  <br/>
+  <em>截图 3：快速缩放与全屏</em>
+</p>
+
+<p align="center">
+  <img src="./docs/image4.png" alt="Overlook 截图 4" width="720" />
+  <br/>
+  <em>截图 4：显示/隐藏操作（眼睛/隐藏眼睛）</em>
+</p>
 
 ## 故障排查
 
