@@ -4,7 +4,7 @@
 
 项目地址：`https://github.com/wavesbig/overlook`
 
-> English version below.
+如果你觉得这个项目有用，请到 GitHub 为项目点 Star ⭐：https://github.com/wavesbig/overlook
 
 ## 主要特性
 
